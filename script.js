@@ -26,21 +26,37 @@ let links = [
 ];
 let links_filtered = [];
 let display_when_empty = true; // Whether to display when the box is empty
+let error_text = "";
 
-// Process command and return whether successful
-function processCommand(command) {
+// Process entered input and return whether successful
+function processInput(new_value) {
 	// Determine type by first character
-	if (!command || command.length == 0) return false; // Invalid
-	if (command.startsWith(":")) {
+	if (!new_value || new_value.length == 0) return false; // Invalid
+	if (new_value.startsWith(":")) {
 		// Command
 		// TODO: impl
-		if (command == ":show") display_when_empty = true;
-		else if (command == ":hide") display_when_empty = false;
+		if (new_value == ":show") display_when_empty = true;
+		else if (new_value == ":hide") display_when_empty = false;
+		else {
+			// Not a command
+			error_text = "Not a command";
+			return false;
+		}
 		return true;
+	} else if (new_value.startsWith("=")) {
+		// Go to the address
+		if (new_value.substring(1).startsWith("http")) window.location.href = new_value.substring(1).trim();
+		else window.location.href = "https://" + new_value.substring(1).trim();
+	} else if (new_value.startsWith("-")) {
+		// Web search
+		window.location.href = "https://google.com/search?q=" + new_value.substring(1).trim();
 	} else {
 		// Link: choose the first filtered
-		if (links_filtered.length == 0) return false; // Cannot do anything // TODO: error message
-		else {
+		if (links_filtered.length == 0) {
+			// Cannot do anything
+			error_text = "No matching links";
+			return false;
+		} else {
 			// Go to the link
 			window.location.href = links_filtered[0].link_href;
 			return true;
@@ -66,6 +82,7 @@ function sortLinks() {
 }
 
 // Update the filter based on the new search query
+const helptext = document.getElementById("helptext");
 function updateFiltered(new_value) {
 	// Based on the contents of the box
 	let trimmed = new_value.trim().toLowerCase();
@@ -90,6 +107,23 @@ function updateFiltered(new_value) {
 		}
 	}
 	sortLinks();
+	// Add help text if needed
+	if (error_text.length > 0) {
+		helptext.className = "error";
+		helptext.innerText = error_text;
+	} else if (new_value.startsWith(":")) {
+		helptext.className = "normal";
+		helptext.innerText = "Enter a command (ex. :hide)";
+	} else if (new_value.startsWith("=")) {
+		helptext.className = "normal";
+		helptext.innerText = "Enter an address (ex. =example.com)";
+	} else if (new_value.startsWith("-")) {
+		helptext.className = "normal";
+		helptext.innerText = "Enter a web search (ex. -marsupials)";
+	} else {
+		helptext.className = "normal";
+		helptext.innerText = "";
+	}
 }
 
 // Render
@@ -133,11 +167,14 @@ omnibar.addEventListener("keypress", (e) => {
 	let new_value = omnibar.value;
 	if (e.key === "Enter") {
 		// Enter
-		let success = processCommand(new_value);
+		let success = processInput(new_value);
 		if (success) {
 			// Clear the box
 			omnibar.value = "";
 		}
+		updateFiltered(omnibar.value);
+	} else {
+		error_text = "";
 	}
 });
 

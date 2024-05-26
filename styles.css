@@ -76,3 +76,14 @@ a:active, a:focus {
 	outline: solid 1px #5aa5c2;
 	border-radius: 2px;
 }
+span {
+	font-size: 14px;
+	margin-bottom: 16px;
+	color: #85849c;
+}
+span.normal {
+	color: #85849c;
+}
+span.error {
+	color: #e66155;
+}
