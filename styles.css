@@ -1,0 +1,78 @@
+/* Page setup */
+html {
+	height: 100%;
+}
+body {
+	margin: 0px;
+	padding: 0px;
+	background-color: #2b2a33;
+	color: white;
+	text-align: center;
+	height: 100%;
+	font-family: "Trebuchet MS";
+}
+div {
+	margin: 0px;
+	padding: 0px;
+	box-sizing: border-box;
+}
+div.container_outer {
+	display:flex;
+	justify-content: center;
+	height: 100%;
+}
+div.container_inner {
+	height: 100%;
+	width: 500px;
+}
+
+/* Misc */
+div.listbox {
+	width: 450px;
+	background-color: #353440;
+	color: #d0cfe6;
+	font-size: 14px;
+	border: none;
+	border-radius: 4px;
+	outline: none;
+	display: inline-block;
+	text-align: left;
+	padding: 8px;
+}
+input.omnibar {
+	height: 36px;
+	width: 450px;
+	background-color: #42414d;
+	color: #d0cfe6;
+	font-size: 14px;
+	border: none;
+	border-radius: 4px;
+	outline: none;
+	text-align: left;
+	padding: 8px;
+	box-sizing: border-box;
+}
+input.omnibar:focus {
+	border: none;
+	outline: solid 2px #5aa5c2;
+}
+div.linkitem_normal {
+	background-color: transparent;
+}
+div.linkitem_selected {
+	background-color: #42414d;
+}
+a, a:visited {
+	color: #5aa5c2;
+	text-decoration: none;
+	outline: none;
+}
+a:hover {
+	cursor: pointer;
+	text-decoration: underline;
+}
+a:active, a:focus {
+	color: #498cad;
+	outline: solid 1px #5aa5c2;
+	border-radius: 2px;
+}
