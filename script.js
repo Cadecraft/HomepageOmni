@@ -28,6 +28,55 @@ let links_filtered = [];
 let display_when_empty = true; // Whether to display when the box is empty
 let error_text = "";
 
+// Set a key and return whether successful
+function setLink(new_key, new_href) {
+	let foundIndex = -1;
+	for (let i = 0; i < links.length; i++) {
+		if (links[i].link_key.toLowerCase().trim() == new_key.toLowerCase().trim()) {
+			foundIndex = i;
+		}
+	}
+	if (foundIndex == -1) {
+		// Add, if possible
+		if (new_key.trim().length == 0) {
+			error_text = "Name must not be empty";
+			return false;
+		} else if (new_key.trim().startsWith(":")) {
+			error_text = "Name cannot start with ':'";
+			return false;
+		} else {
+			links.push({
+				link_key: new_key.trim(),
+				link_href: new_href.trim()
+			});
+		}
+	} else {
+		// Found: set
+		// TODO: other checks?
+		links[foundIndex].link_href = new_href.trim();
+	}
+	return true;
+}
+
+// Delete a key and return whether successful
+function deleteLink(new_key) {
+	let foundIndex = -1;
+	for (let i = 0; i < links.length; i++) {
+		if (links[i].link_key.toLowerCase().trim() == new_key.toLowerCase().trim()) {
+			foundIndex = i;
+		}
+	}
+	if (foundIndex == -1) {
+		// Does not exist
+		error_text = "Link key not found";
+		return false;
+	} else {
+		// Found: set
+		links.splice(foundIndex, 1);
+	}
+	return true;
+}
+
 // Process entered input and return whether successful
 function processInput(new_value) {
 	// Determine type by first character
@@ -37,7 +86,26 @@ function processInput(new_value) {
 		// TODO: impl
 		if (new_value == ":show") display_when_empty = true;
 		else if (new_value == ":hide") display_when_empty = false;
-		else {
+		else if (new_value.startsWith(":delete")) {
+			// Delete
+			return deleteLink(new_value.substring(7).trim());
+		} else if (new_value.startsWith(":set")) {
+			// Set
+			// Parse to find arguments
+			let arguments_string = new_value.substring(4).trim();
+			let key_value = "";
+			let href_value = "";
+			let foundSpace = false;
+			for (let i = arguments_string.length - 1; i >= 0; i--) {
+				let thischar = arguments_string.substring(i, i + 1);
+				if (foundSpace) key_value = thischar + key_value;
+				else if (thischar == ' ') foundSpace = true;
+				else href_value = thischar + href_value;
+			}
+			key_value = key_value.trim();
+			href_value = href_value.trim();
+			return setLink(key_value, href_value);
+		} else {
 			// Not a command
 			error_text = "Not a command";
 			return false;
@@ -97,7 +165,9 @@ function updateFiltered(new_value) {
 		// Not empty: filter
 		links_filtered = [];
 		for (const link of links) {
-			if (link.link_key.toLowerCase().includes(trimmed)) {
+			// TODO: ignore all spaces for easier search?
+			let matchesFilter = link.link_key.toLowerCase().includes(trimmed);
+			if (matchesFilter) {
 				links_filtered.push(structuredClone(link));
 				if (link.link_key.toLowerCase().startsWith(trimmed)) {
 					// First priority: starts with

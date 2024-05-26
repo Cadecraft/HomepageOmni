@@ -10,6 +10,10 @@ quick links via an omnibar
 <!-- TODO: images -->
 :warning: This is a new in-progress project; not all of the commands and features listed are added yet.
 
+## Installation
+
+Installation instructions will be added once this project becomes more complete.
+
 ## Commands
 
 Type any string to filter through the list of links (described below)
