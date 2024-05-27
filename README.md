@@ -1,7 +1,7 @@
 # Homepage Omni
 
-A custom homepage/new tab page extension for Firefox that let you create and access
-quick links via an omnibar
+A custom, lightweight homepage/new tab extension for Firefox or Chrome that lets
+you create and access quick links via an omnibar
 
 - Productive: keyboard-based mouse-free interaction, available at any new tab page
 - Customizable: add any links
@@ -12,7 +12,20 @@ quick links via an omnibar
 
 ## Installation
 
-Installation instructions will be added once this project becomes more complete.
+This extension should work on either Firefox or Chrome.
+
+To test out the extension on Firefox:
+1. Download this source code
+2. In Firefox, go to `about:debugging`
+3. Go to the This Firefox section and upload this `manifest.json` file.
+
+To add the extension to Chrome:
+1. Download this source code
+2. Go to `chrome://extensions`
+3. Turn on Developer Mode in the top right
+4. In the top left, Load Unpacked and upload this entire folder
+
+Improved installation instructions will be added once this project becomes more complete.
 
 ## Commands
 
@@ -29,7 +42,7 @@ Commands are prefixed with `:`.
 
 <!-- TODO: impl -->
 Addresses are prefixed with `=`.
-- `=example.com` - Go to example.com
+- `=example.com` - Go to https://example.com
 
 <!-- TODO: impl -->
 Web searches are prefixed with `-`.
