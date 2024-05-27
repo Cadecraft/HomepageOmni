@@ -7,22 +7,22 @@
 // Implement all commands
 // Create git and repo
 // Max height and scroll bar for the link list
-// Filesystem/exporting/importing/saving links
+// Filesystem/storage/exporting/importing/saving links
 // Save config setting of display_when_empty
 // Allow changing your search engine
 // Tabbing from the bar doesn't work well
+// ? prefix should show help to describe commands
 
 // Data
 // { key, href, priority }
 // TODO: rename these without the "link_" prefix?
 let links = [
 	{ link_key: "Example Link", link_href: "https://example.com", link_priority: 0 },
-	{ link_key: "1. Link 1", link_href: "https://mail.google.com", link_priority: 0 },
-	{ link_key: "2. Link 5", link_href: "https://mail.google.com", link_priority: 0 },
-	{ link_key: "3. Link 3", link_href: "https://google.com", link_priority: 0 },
-	{ link_key: "4. Link 4", link_href: "https://google.com", link_priority: 0 },
-	{ link_key: "5. Link 9", link_href: "https://google.com", link_priority: 0 },
-	{ link_key: "4. Link 4", link_href: "https://google.com", link_priority: 0 }
+	{ link_key: "Google", link_href: "https://google.com", link_priority: 0 },
+	{ link_key: "Gmail", link_href: "https://mail.google.com", link_priority: 0 },
+	{ link_key: "GitHub", link_href: "https://github.com", link_priority: 0 },
+	{ link_key: "YouTube", link_href: "https://youtube.com/", link_priority: 0 },
+	{ link_key: "LeetCode", link_href: "https://leetcode.com/problemset", link_priority: 0 }
 ];
 let links_filtered = [];
 let display_when_empty = true; // Whether to display when the box is empty
@@ -41,8 +41,11 @@ function setLink(new_key, new_href) {
 		if (new_key.trim().length == 0) {
 			error_text = "Name must not be empty";
 			return false;
-		} else if (new_key.trim().startsWith(":")) {
-			error_text = "Name cannot start with ':'";
+		} else if (new_key.trim().startsWith(":") || new_key.trim().startsWith("=") || new_key.trim().startsWith("-")) {
+			error_text = "Name cannot start with ':', '=', or '-'";
+			return false;
+		} else if (new_href.includes(",")) {
+			error_text = "URL cannot contain commas";
 			return false;
 		} else {
 			links.push({
@@ -83,7 +86,7 @@ function processInput(new_value) {
 	if (!new_value || new_value.length == 0) return false; // Invalid
 	if (new_value.startsWith(":")) {
 		// Command
-		// TODO: impl
+		// TODO: impl all (import/export)
 		if (new_value == ":show") display_when_empty = true;
 		else if (new_value == ":hide") display_when_empty = false;
 		else if (new_value.startsWith(":delete")) {
@@ -105,6 +108,22 @@ function processInput(new_value) {
 			key_value = key_value.trim();
 			href_value = href_value.trim();
 			return setLink(key_value, href_value);
+		} else if (new_value.startsWith(":export")) {
+			// Export as a .csv file
+			let text = "";
+			for (const link of links) {
+				text += link.link_key + ", " + link.link_href + "\n";
+			}
+			let elem = document.createElement("a");
+			elem.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(text));
+			elem.setAttribute("download", "links.csv");
+			elem.style.display = "none";
+			document.body.appendChild(elem);
+			elem.click();
+			document.body.removeChild(elem);
+		} else if (new_value.startsWith(":import")) {
+			// Import from a .csv file
+			// TODO: impl
 		} else {
 			// Not a command
 			error_text = "Not a command";
@@ -122,7 +141,7 @@ function processInput(new_value) {
 		// Link: choose the first filtered
 		if (links_filtered.length == 0) {
 			// Cannot do anything
-			error_text = "No matching links";
+			error_text = "No matching links (did you mean to use a :command?)";
 			return false;
 		} else {
 			// Go to the link
