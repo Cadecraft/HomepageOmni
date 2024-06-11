@@ -1,6 +1,6 @@
 # Homepage Omni
 
-A custom, lightweight homepage/new tab extension for Firefox or Chrome that lets
+A custom, lightweight homepage/new tab browser extension that lets
 you create and access quick links via an omnibar
 
 - Productive: keyboard-based mouse-free interaction, available at any new tab page
@@ -12,7 +12,7 @@ you create and access quick links via an omnibar
 
 ## Installation
 
-This extension should work on either Firefox or Chrome.
+This extension should work on either Firefox or Chrome, but is currently only tested in Firefox.
 
 To test out the extension on Firefox:
 1. Download this source code
@@ -31,7 +31,6 @@ Improved installation instructions will be added once this project becomes more 
 
 Type any string to filter through the list of links (described below)
 
-<!-- TODO: impl all -->
 Commands are prefixed with `:`.
 - `:show` - Show all links by default (when the omnibar is empty)
 - `:hide` - Hide all links by default
@@ -39,6 +38,7 @@ Commands are prefixed with `:`.
 - `:delete {link name}` - Delete the link with the given name
 - `:export` - Export/save the list of links to a .csv file
 - `:import` - Import/load the list of links from a .csv file
+<!-- TODO: impl export/import -->
 
 <!-- TODO: impl -->
 Addresses are prefixed with `=`.

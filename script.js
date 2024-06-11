@@ -1,6 +1,6 @@
 // Homepage Omni
 // Cadecraft
-// v0.1.0; 2024/05/25
+// v0.2.0; 2024/06/11
 
 // TODO:
 // Make into extension
@@ -8,10 +8,14 @@
 // Create git and repo
 // Max height and scroll bar for the link list
 // Filesystem/storage/exporting/importing/saving links
-// Save config setting of display_when_empty
 // Allow changing your search engine
 // Tabbing from the bar doesn't work well
+// Use arrow keys to navigate (add to readme and impl)
 // ? prefix should show help to describe commands
+// On :set and :delete, show the commands being filtered in the box
+// Save the preferences (display_when_empty)
+// Test: in Chrome?
+// Release: publish for Firefox?
 
 // Data
 // { key, href, priority }
@@ -27,6 +31,10 @@ let links = [
 let links_filtered = [];
 let display_when_empty = true; // Whether to display when the box is empty
 let error_text = "";
+
+// Determine browser type
+// TODO: better way of determining browser type?
+let is_chrome = navigator.userAgent.includes("Chrome");
 
 // Set a key and return whether successful
 function setLink(new_key, new_href) {
@@ -55,9 +63,10 @@ function setLink(new_key, new_href) {
 		}
 	} else {
 		// Found: set
-		// TODO: other checks?
+		// TODO: other checks? Validate the value?
 		links[foundIndex].link_href = new_href.trim();
 	}
+	saveLinks();
 	return true;
 }
 
@@ -71,12 +80,13 @@ function deleteLink(new_key) {
 	}
 	if (foundIndex == -1) {
 		// Does not exist
-		error_text = "Link key not found";
+		error_text = "Link key not found; please provide the full name";
 		return false;
 	} else {
 		// Found: set
 		links.splice(foundIndex, 1);
 	}
+	saveLinks();
 	return true;
 }
 
@@ -171,8 +181,12 @@ function sortLinks() {
 // Update the filter based on the new search query
 const helptext = document.getElementById("helptext");
 function updateFiltered(new_value) {
+	helptext.className = "normal";
+	helptext.innerText = "";
 	// Based on the contents of the box
 	let trimmed = new_value.trim().toLowerCase();
+	let shouldFilter = true;
+	let filterTo = trimmed;
 	if (trimmed == "") {
 		// Empty: show or hide, based on the setting
 		if (display_when_empty) {
@@ -180,15 +194,32 @@ function updateFiltered(new_value) {
 		} else {
 			links_filtered = [];
 		}
-	} else {
+		shouldFilter = false;
+	} else if (trimmed.startsWith(":set") || trimmed.startsWith(":delete")) {
+		// Command: trim and filter for some commands (ex. :set and :delete)
+		filterTo = "";
+		let foundSpace = false;
+		for (let i = 0; i < trimmed.length; i++) {
+			if (trimmed[i] == ' ' && !foundSpace) { foundSpace = true; }
+			else if (foundSpace) { filterTo += trimmed[i]; }
+		}
+		shouldFilter = true;
+		// Update help text
+		if (trimmed.startsWith(":set")) {
+			helptext.innerText = ":set <display name> <full URL>";
+		} else if (trimmed.startsWith(":delete")) {
+			helptext.innerText = ":delete <full name of link to delete>";
+		}
+	}
+	if (shouldFilter) {
 		// Not empty: filter
 		links_filtered = [];
 		for (const link of links) {
 			// TODO: ignore all spaces for easier search?
-			let matchesFilter = link.link_key.toLowerCase().includes(trimmed);
+			let matchesFilter = link.link_key.toLowerCase().includes(filterTo);
 			if (matchesFilter) {
 				links_filtered.push(structuredClone(link));
-				if (link.link_key.toLowerCase().startsWith(trimmed)) {
+				if (link.link_key.toLowerCase().startsWith(filterTo)) {
 					// First priority: starts with
 					links_filtered[links_filtered.length - 1].link_priority = 1;
 				}
@@ -200,7 +231,7 @@ function updateFiltered(new_value) {
 	if (error_text.length > 0) {
 		helptext.className = "error";
 		helptext.innerText = error_text;
-	} else if (new_value.startsWith(":")) {
+	} else if (new_value.startsWith(":") && helptext.innerText == "") {
 		helptext.className = "normal";
 		helptext.innerText = "Enter a command (ex. :hide)";
 	} else if (new_value.startsWith("=")) {
@@ -209,9 +240,6 @@ function updateFiltered(new_value) {
 	} else if (new_value.startsWith("-")) {
 		helptext.className = "normal";
 		helptext.innerText = "Enter a web search (ex. -marsupials)";
-	} else {
-		helptext.className = "normal";
-		helptext.innerText = "";
 	}
 }
 
@@ -267,7 +295,70 @@ omnibar.addEventListener("keypress", (e) => {
 	}
 });
 
+// Save links to storage, if possible
+async function saveLinks() {
+	if (is_chrome) {
+		// Use chrome storage
+		// TODO: test
+		chrome.storage.local.set({
+			"userlinks": links
+		});
+	} else {
+		// Use cross-browser storage
+		let settingItem = browser.storage.local.set({
+			"userlinks": links
+		});
+	}
+}
+
+// Load links from storage, if possible, and render
+async function loadLinks() {
+	if (is_chrome) {
+		// Use chrome storage
+		// TODO: test
+		chrome.storage.local.get("userlinks", (result) => {
+			// Based on result
+			if (
+				result != null && result != undefined
+				&& Object.keys(result).length !== 0
+				&& "userlinks" in result
+			) {
+				// Update to result
+				links = [];
+				for (const value of result["userlinks"]) {
+					links.push(value); // Value should be a link object { link_key: "", ... }
+				}
+				// Update
+				sortLinks();
+				updateFiltered("");
+				render();
+			}
+		});
+	} else {
+		// Use cross-browser storage
+		let result = await browser.storage.local.get("userlinks");
+		// Based on result
+		if (
+			result != null && result != undefined
+			&& Object.keys(result).length !== 0
+			&& "userlinks" in result
+		) {
+			// Update to result
+			links = [];
+			for (const value of result["userlinks"]) {
+				links.push(value); // Value should be a link object { link_key: "", ... }
+			}
+			// Update
+			sortLinks();
+			updateFiltered("");
+			render();
+		}
+	}
+}
+
 // First time loading the page
 sortLinks();
 updateFiltered("");
 render();
+// Load links from storage, if possible
+loadLinks();
