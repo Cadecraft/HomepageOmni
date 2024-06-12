@@ -17,7 +17,8 @@ This extension should work on either Firefox or Chrome, but is currently only te
 To test out the extension on Firefox:
 1. Download this source code
 2. In Firefox, go to `about:debugging`
-3. Go to the This Firefox section and upload this `manifest.json` file.
+3. Go to the This Firefox section and click `Load Temporary Add-on...`
+4. Upload this `manifest.json` file.
 
 To add the extension to Chrome:
 1. Download this source code
@@ -34,11 +35,10 @@ Type any string to filter through the list of links (described below)
 Commands are prefixed with `:`.
 - `:show` - Show all links by default (when the omnibar is empty)
 - `:hide` - Hide all links by default
-- `:set {link name} {link url}` - Add or change a link with the given name
+- `:set {link name} {link URL}` - Add or change a link with the given name
 - `:delete {link name}` - Delete the link with the given name
 - `:export` - Export/save the list of links to a .csv file
 - `:import` - Import/load the list of links from a .csv file
-<!-- TODO: impl export/import -->
 
 <!-- TODO: impl -->
 Addresses are prefixed with `=`.

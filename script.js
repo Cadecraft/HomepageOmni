@@ -7,12 +7,10 @@
 // Implement all commands
 // Create git and repo
 // Max height and scroll bar for the link list
-// Filesystem/storage/exporting/importing/saving links
 // Allow changing your search engine
 // Tabbing from the bar doesn't work well
 // Use arrow keys to navigate (add to readme and impl)
 // ? prefix should show help to describe commands
-// On :set and :delete, show the commands being filtered in the box
 // Save the preferences (display_when_empty)
 // Test: in Chrome?
 // Release: publish for Firefox?
@@ -120,20 +118,14 @@ function processInput(new_value) {
 			return setLink(key_value, href_value);
 		} else if (new_value.startsWith(":export")) {
 			// Export as a .csv file
-			let text = "";
-			for (const link of links) {
-				text += link.link_key + ", " + link.link_href + "\n";
-			}
-			let elem = document.createElement("a");
-			elem.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(text));
-			elem.setAttribute("download", "links.csv");
-			elem.style.display = "none";
-			document.body.appendChild(elem);
-			elem.click();
-			document.body.removeChild(elem);
+			exportFile();
+			// TODO: test refactor
 		} else if (new_value.startsWith(":import")) {
 			// Import from a .csv file
-			// TODO: impl
+			// Activate file select
+			//document.getElementById("file-uploader").style.display = "inline";
+			document.getElementById("file-uploader").click();
+			// TODO: impl on upload file: parse value, err if needed, hide button again
 		} else {
 			// Not a command
 			error_text = "Not a command";
@@ -206,9 +198,9 @@ function updateFiltered(new_value) {
 		shouldFilter = true;
 		// Update help text
 		if (trimmed.startsWith(":set")) {
-			helptext.innerText = ":set <display name> <full URL>";
+			helptext.innerText = ":set {display name} {full URL}";
 		} else if (trimmed.startsWith(":delete")) {
-			helptext.innerText = ":delete <full name of link to delete>";
+			helptext.innerText = ":delete {full name of link to delete}";
 		}
 	}
 	if (shouldFilter) {
@@ -242,6 +234,69 @@ function updateFiltered(new_value) {
 		helptext.innerText = "Enter a web search (ex. -marsupials)";
 	}
 }
+
+// Export to a file
+function exportFile() {
+	let text = "";
+	for (const link of links) {
+		text += link.link_key + ", " + link.link_href + "\n";
+	}
+	let elem = document.createElement("a");
+	elem.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(text));
+	elem.setAttribute("download", "links.csv");
+	elem.style.display = "none";
+	document.body.appendChild(elem);
+	elem.click();
+	document.body.removeChild(elem);
+}
+
+// Import from raw text (the CSV format that is exported)
+function importFromText(theText) {
+	// TODO: test
+	const lines = theText.split(/[\r\n]+/);
+	links = [];
+	for (const row of lines) {
+		// Link key, link URL
+		// Key can contain commas, but URL cannot, so parse from the back
+		let thisURL = "";
+		let thisKey = "";
+		let reachedComma = false;
+		for (let i = row.length - 1; i >= 0; i--) {
+			if (!reachedComma) {
+				if (row[i] == ',') reachedComma = true;
+				else thisURL = row[i] + thisURL;
+			} else {
+				thisKey = row[i] + thisKey;
+			}
+		}
+		thisURL = thisURL.trim();
+		thisKey = thisKey.trim();
+		console.log(thisKey + " : " + thisURL);
+		// Do not add if the URL or the key do not exist or are invalid
+		if (thisURL.length <= 0 || thisKey.length <= 0) continue;
+		links.push({ link_key: thisKey, link_href: thisURL, link_priority: 0 });
+	}
+	render(); // TODO: rerender better
+	// Save the links to storage after loading them (assuming no errors)
+	// TODO: test
+	saveLinks();
+}
+
+// Upload a file
+document.getElementById("file-uploader").addEventListener("change", () => {
+	// File must exist
+	if (document.getElementById("file-uploader").files.length <= 0) return;
+	// Try to parse the value
+	const file = document.getElementById("file-uploader").files[0];
+	let reader = new FileReader();
+	reader.addEventListener("load", function() {
+		// Loaded the text content
+		const textContent = reader.result; // TODO: test
+		// Update from the text
+		importFromText(textContent);
+	});
+	reader.readAsText(file);
+});
 
 // Render
 const listbox = document.getElementById("listbox");
