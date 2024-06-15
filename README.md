@@ -7,7 +7,8 @@ you create and access quick links via an omnibar
 - Customizable: add any links
 - Private: nothing you type in the bar is recorded
 
-<!-- TODO: images -->
+![A screenshot of HomepageOmni](screenshot.jpg "A screenshot of HomepageOmni")
+
 :warning: This is a new in-progress project; not all of the commands and features listed are added yet.
 
 ## Installation
@@ -40,11 +41,9 @@ Commands are prefixed with `:`.
 - `:export` - Export/save the list of links to a .csv file
 - `:import` - Import/load the list of links from a .csv file
 
-<!-- TODO: impl -->
 Addresses are prefixed with `=`.
 - `=example.com` - Go to https://example.com
 
-<!-- TODO: impl -->
 Web searches are prefixed with `-`.
 - `-marsupials` - Google search for "marsupials"
 

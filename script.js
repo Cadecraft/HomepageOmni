@@ -1,16 +1,13 @@
 // Homepage Omni
 // Cadecraft
-// v0.2.0; 2024/06/11
+// v0.2.0; 2024/06/15
 
 // TODO:
 // Make into extension
-// Implement all commands
-// Create git and repo
 // Max height and scroll bar for the link list
 // Allow changing your search engine
 // Tabbing from the bar doesn't work well
 // Use arrow keys to navigate (add to readme and impl)
-// ? prefix should show help to describe commands
 // Save the preferences (display_when_empty)
 // Test: in Chrome?
 // Release: publish for Firefox?
@@ -94,7 +91,6 @@ function processInput(new_value) {
 	if (!new_value || new_value.length == 0) return false; // Invalid
 	if (new_value.startsWith(":")) {
 		// Command
-		// TODO: impl all (import/export)
 		if (new_value == ":show") display_when_empty = true;
 		else if (new_value == ":hide") display_when_empty = false;
 		else if (new_value.startsWith(":delete")) {
@@ -119,13 +115,16 @@ function processInput(new_value) {
 		} else if (new_value.startsWith(":export")) {
 			// Export as a .csv file
 			exportFile();
-			// TODO: test refactor
+			return true;
 		} else if (new_value.startsWith(":import")) {
 			// Import from a .csv file
 			// Activate file select
-			//document.getElementById("file-uploader").style.display = "inline";
 			document.getElementById("file-uploader").click();
-			// TODO: impl on upload file: parse value, err if needed, hide button again
+			return true;
+		} else if (new_value.startsWith(":help")) {
+			// Tell to read the README.md
+			error_text = 'For help, check the included README.md file'
+			return true;
 		} else {
 			// Not a command
 			error_text = "Not a command";
@@ -252,7 +251,6 @@ function exportFile() {
 
 // Import from raw text (the CSV format that is exported)
 function importFromText(theText) {
-	// TODO: test
 	const lines = theText.split(/[\r\n]+/);
 	links = [];
 	for (const row of lines) {
@@ -276,9 +274,11 @@ function importFromText(theText) {
 		if (thisURL.length <= 0 || thisKey.length <= 0) continue;
 		links.push({ link_key: thisKey, link_href: thisURL, link_priority: 0 });
 	}
-	render(); // TODO: rerender better
+	sortLinks();
+	updateFiltered("");
+	render();
 	// Save the links to storage after loading them (assuming no errors)
-	// TODO: test
+	// TODO: display result/error if needed?
 	saveLinks();
 }
 
@@ -291,7 +291,7 @@ document.getElementById("file-uploader").addEventListener("change", () => {
 	let reader = new FileReader();
 	reader.addEventListener("load", function() {
 		// Loaded the text content
-		const textContent = reader.result; // TODO: test
+		const textContent = reader.result;
 		// Update from the text
 		importFromText(textContent);
 	});
@@ -354,7 +354,7 @@ omnibar.addEventListener("keypress", (e) => {
 async function saveLinks() {
 	if (is_chrome) {
 		// Use chrome storage
-		// TODO: test
+		// TODO: test in chrome
 		chrome.storage.local.set({
 			"userlinks": links
 		});
@@ -370,7 +370,7 @@ async function saveLinks() {
 async function loadLinks() {
 	if (is_chrome) {
 		// Use chrome storage
-		// TODO: test
+		// TODO: test in chrome
 		chrome.storage.local.get("userlinks", (result) => {
 			// Based on result
 			if (
