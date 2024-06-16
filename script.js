@@ -3,12 +3,11 @@
 // v0.2.0; 2024/06/15
 
 // TODO:
-// Make into extension
-// Max height and scroll bar for the link list
+// Max height and scroll bar for the list of links
 // Allow changing your search engine
 // Tabbing from the bar doesn't work well
-// Use arrow keys to navigate (add to readme and impl)
 // Save the preferences (display_when_empty)
+// Colors: change slightly?
 // Test: in Chrome?
 // Release: publish for Firefox?
 
@@ -24,6 +23,7 @@ let links = [
 	{ link_key: "LeetCode", link_href: "https://leetcode.com/problemset", link_priority: 0 }
 ];
 let links_filtered = [];
+let selectedi = 0; // The current index selected from links_filtered
 let display_when_empty = true; // Whether to display when the box is empty
 let error_text = "";
 
@@ -88,7 +88,6 @@ function deleteLink(new_key) {
 // Process entered input and return whether successful
 function processInput(new_value) {
 	// Determine type by first character
-	if (!new_value || new_value.length == 0) return false; // Invalid
 	if (new_value.startsWith(":")) {
 		// Command
 		if (new_value == ":show") display_when_empty = true;
@@ -139,14 +138,16 @@ function processInput(new_value) {
 		// Web search
 		window.location.href = "https://google.com/search?q=" + new_value.substring(1).trim();
 	} else {
-		// Link: choose the first filtered
+		// Link: choose the selected one of the filtered
 		if (links_filtered.length == 0) {
 			// Cannot do anything
 			error_text = "No matching links (did you mean to use a :command?)";
 			return false;
 		} else {
 			// Go to the link
-			window.location.href = links_filtered[0].link_href;
+			if (selectedi < 0) selectedi = 0;
+			else if (selectedi >= links_filtered.length) selectedi = links_filtered.length - 1;
+			window.location.href = links_filtered[selectedi].link_href;
 			return true;
 		}
 	}
@@ -232,6 +233,8 @@ function updateFiltered(new_value) {
 		helptext.className = "normal";
 		helptext.innerText = "Enter a web search (ex. -marsupials)";
 	}
+	// Handle selection
+	if (selectedi >= links_filtered.length) selectedi = links_filtered.length - 1;
 }
 
 // Export to a file
@@ -307,14 +310,14 @@ function render() {
 	}
 	// Based on the links which have been filtered
 	let first_item = true;
-	for (const link of links_filtered) {
+	for (let i = 0; i < links_filtered.length; i++) {
 		// Render the link
 		const new_div = document.createElement("div");
-		if (first_item) new_div.className = "linkitem_selected";
+		if (i == selectedi) new_div.className = "linkitem_selected";
 		else new_div.className = "linkitem_normal";
 		const new_a = document.createElement("a");
-		new_a.href = link.link_href;
-		new_a.innerText = link.link_key;
+		new_a.href = links_filtered[i].link_href;
+		new_a.innerText = links_filtered[i].link_key;
 		new_div.appendChild(new_a);
 		listbox.appendChild(new_div);
 		first_item = false;
@@ -327,6 +330,20 @@ omnibar.addEventListener("change", () => {
 	let new_value = omnibar.value;
 	updateFiltered(new_value);
 	render();
+});
+omnibar.addEventListener("keydown", (e) => {
+	// Arrows
+	if (e.key === "ArrowUp") {
+		// Move selection up
+		selectedi--;
+		if (selectedi < 0) selectedi = links_filtered.length - 1;
+		render();
+	} else if (e.key === "ArrowDown") {
+		// Move selection down
+		selectedi++;
+		if (selectedi >= links_filtered.length) selectedi = 0;
+		render();
+	}
 });
 omnibar.addEventListener("keyup", (e) => {
 	let new_value = omnibar.value;

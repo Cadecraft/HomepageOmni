@@ -31,7 +31,9 @@ Improved installation instructions will be added once this project becomes more 
 
 ## Commands
 
-Type any string to filter through the list of links (described below)
+Type any string to filter through the list of links (described below); press enter to go to the link
+
+The up and down arrow keys can be used to switch between links from the filtered list
 
 Commands are prefixed with `:`.
 - `:show` - Show all links by default (when the omnibar is empty)
