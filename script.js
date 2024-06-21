@@ -1,19 +1,16 @@
 // Homepage Omni
 // Cadecraft
-// v0.2.0; 2024/06/15
+// v0.3.0; 2024/06/21
 
 // TODO:
 // Max height and scroll bar for the list of links
 // Allow changing your search engine
 // Tabbing from the bar doesn't work well
-// Save the preferences (display_when_empty)
 // Colors: change slightly?
-// Test: in Chrome?
 // Release: publish for Firefox?
 
 // Data
 // { key, href, priority }
-// TODO: rename these without the "link_" prefix?
 let links = [
 	{ link_key: "Example Link", link_href: "https://example.com", link_priority: 0 },
 	{ link_key: "Google", link_href: "https://google.com", link_priority: 0 },
@@ -90,9 +87,13 @@ function processInput(new_value) {
 	// Determine type by first character
 	if (new_value.startsWith(":")) {
 		// Command
-		if (new_value == ":show") display_when_empty = true;
-		else if (new_value == ":hide") display_when_empty = false;
-		else if (new_value.startsWith(":delete")) {
+		if (new_value == ":show") {
+			display_when_empty = true;
+			saveLinks();
+		} else if (new_value == ":hide") {
+			display_when_empty = false;
+			saveLinks();
+		} else if (new_value.startsWith(":delete")) {
 			// Delete
 			return deleteLink(new_value.substring(7).trim());
 		} else if (new_value.startsWith(":set")) {
@@ -225,7 +226,7 @@ function updateFiltered(new_value) {
 		helptext.innerText = error_text;
 	} else if (new_value.startsWith(":") && helptext.innerText == "") {
 		helptext.className = "normal";
-		helptext.innerText = "Enter a command (ex. :hide)";
+		helptext.innerText = "Enter a command (ex. :set)";
 	} else if (new_value.startsWith("=")) {
 		helptext.className = "normal";
 		helptext.innerText = "Enter an address (ex. =example.com)";
@@ -367,39 +368,44 @@ omnibar.addEventListener("keypress", (e) => {
 	}
 });
 
-// Save links to storage, if possible
+// Save links and config to storage, if possible
 async function saveLinks() {
 	if (is_chrome) {
 		// Use chrome storage
-		// TODO: test in chrome
 		chrome.storage.local.set({
-			"userlinks": links
+			"userlinks": links,
+			"display_when_empty": display_when_empty
 		});
 	} else {
 		// Use cross-browser storage
-		let settingItem = browser.storage.local.set({
-			"userlinks": links
+		browser.storage.local.set({
+			"userlinks": links,
+			"display_when_empty": display_when_empty
+
 		});
 	}
 }
 
-// Load links from storage, if possible, and render
+// Load links and config from storage, if possible, and render
 async function loadLinks() {
 	if (is_chrome) {
 		// Use chrome storage
-		// TODO: test in chrome
-		chrome.storage.local.get("userlinks", (result) => {
+		// TODO: test more in chrome
+		chrome.storage.local.get(["userlinks", "display_when_empty"], (result) => {
 			// Based on result
 			if (
 				result != null && result != undefined
 				&& Object.keys(result).length !== 0
 				&& "userlinks" in result
+				&& "display_when_empty" in result
 			) {
 				// Update to result
 				links = [];
 				for (const value of result["userlinks"]) {
 					links.push(value); // Value should be a link object { link_key: "", ... }
 				}
+				// Update to config
+				display_when_empty = result["display_when_empty"];
 				// Update
 				sortLinks();
 				updateFiltered("");
@@ -408,18 +414,21 @@ async function loadLinks() {
 		});
 	} else {
 		// Use cross-browser storage
-		let result = await browser.storage.local.get("userlinks");
+		let result = await browser.storage.local.get(["userlinks", "display_when_empty"]);
 		// Based on result
 		if (
 			result != null && result != undefined
 			&& Object.keys(result).length !== 0
 			&& "userlinks" in result
+			&& "display_when_empty" in result
 		) {
 			// Update to result
 			links = [];
 			for (const value of result["userlinks"]) {
 				links.push(value); // Value should be a link object { link_key: "", ... }
 			}
+			// Update to config
+			display_when_empty = result["display_when_empty"];
 			// Update
 			sortLinks();
 			updateFiltered("");

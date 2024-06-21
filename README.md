@@ -5,15 +5,13 @@ you create and access quick links via an omnibar
 
 - Productive: keyboard-based mouse-free interaction, available at any new tab page
 - Customizable: add any links
-- Private: nothing you type in the bar is recorded
+- Private: nothing you type in the bar is recorded until you hit enter
 
 ![A screenshot of HomepageOmni](screenshot.jpg "A screenshot of HomepageOmni")
 
-:warning: This is a new in-progress project; not all of the commands and features listed are added yet.
-
 ## Installation
 
-This extension should work on either Firefox or Chrome, but is currently only tested in Firefox.
+This extension works in both Firefox and Chrome, but is mostly tested in Firefox as my personal homepage.
 
 To test out the extension on Firefox:
 1. Download this source code
@@ -27,13 +25,13 @@ To add the extension to Chrome:
 3. Turn on Developer Mode in the top right
 4. In the top left, Load Unpacked and upload this entire folder
 
-Improved installation instructions will be added once this project becomes more complete.
+Improved installation instructions will be added once this project becomes more complete. If you experience problems or have suggestions, feel free to create a GitHub issue.
 
 ## Commands
 
-Type any string to filter through the list of links (described below); press enter to go to the link
+Type any string to filter through the list of links (described below); press enter to go to the link.
 
-The up and down arrow keys can be used to switch between links from the filtered list
+The up and down arrow keys can be used to switch between links from the filtered list.
 
 Commands are prefixed with `:`.
 - `:show` - Show all links by default (when the omnibar is empty)
@@ -60,3 +58,9 @@ The links are sorted using these rules:
 - All links *starting* with the filter come first
 - Sorted alphabetically
 - Example: when searching "list", "List of fruits" comes before "Apples and oranges list"
+
+## Permissions
+
+This extension uses the following permissions:
+- `webNavigation` - to follow links
+- `storage` - to store only the links you add; nothing else is stored
