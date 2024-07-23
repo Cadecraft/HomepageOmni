@@ -74,12 +74,15 @@ Link object format example
 }
 ```
 
-Event object format example (creates an event Lunch Time at 12:25pm) (hours are from 1 to 23)
+Event object format example (creates an event Lunch Time at 12:25pm repeating each work weekday)
+
+Note: hours are from 1 to 23; weekdays are 'Su', 'M', 'Tu', 'W', 'Th', 'F', and 'Sa'; if "rep" is not defined the event always repeats
 ```json
 {
     "name": "Lunch Time",
     "hr": 12,
-    "min": 25
+    "min": 25,
+    "rep": "MTuWThF"
 }
 ```
 

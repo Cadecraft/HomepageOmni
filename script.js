@@ -33,11 +33,11 @@ let config_default = {
 	],
 	// Events: { name (display name), hr (1-23), min (0-59) }
 	"events": [
-		{ name: "10am", hr: 10, min: 0 },
-		{ name: "10:30am", hr: 10, min: 30 },
-		{ name: "10:49am", hr: 10, min: 49 },
-		{ name: "11am", hr: 11, min: 0 },
-		{ name: "12pm", hr: 12, min: 0 }
+		{ name: "10am", hr: 10, min: 0, rep: "SuMTuWThFSa" },
+		{ name: "10:30am", hr: 10, min: 30, rep: "SuMTuWThFSa" },
+		{ name: "10:49am", hr: 10, min: 49, rep: "SuMTuWThFSa" },
+		{ name: "11am", hr: 11, min: 0, },
+		{ name: "12pm", hr: 12, min: 0, rep: "SuMTuWThFSa" }
 	]
 };
 // The actual config
@@ -442,21 +442,33 @@ function padTime(time) {
 
 // Update clock and time
 const clocktext = document.getElementById("clocktext");
+const datetext = document.getElementById("datetext");
 const eventbox = document.getElementById("eventbox");
+const weekdays = ["Sun.", "Mon.", "Tues.", "Wed.", "Thurs.", "Fri.", "Sat."];
+const weekdaysChar = ['Su', 'M', 'Tu', 'W', 'Th', 'F', 'Sa'];
 function updateClock() {
-	// Current time
+	// Current time and date
 	let d = new Date();
 	let currHr = d.getHours();
 	let currMin = d.getMinutes();
 	let currSec = d.getSeconds();
+	let currWeekday = d.getDay();
+	let currWeekdayChar = weekdaysChar[currWeekday];
 	// Clock display
 	clocktext.innerText = padTime(currHr) + ":" + padTime(currMin);
+	// Date display
+	datetext.innerText = d.getFullYear() + "/" + (d.getMonth() + 1) + "/" + d.getDate() + " - " + weekdays[currWeekday];
 	// Events timers
 	while (eventbox.firstChild) {
 		eventbox.removeChild(eventbox.lastChild);
 	}
 	for (ev of config.events) {
 		// { name, hr, min }
+		if (("rep" in ev) && !(ev.rep.includes(currWeekdayChar))) {
+			// Not the right weekday
+			// TODO: test
+			continue;
+		}
 		let totalDiffMin = (ev.hr * 60 + ev.min) - (currHr * 60 + currMin + 1);
 		let diffHr = Math.floor(totalDiffMin / 60);
 		let diffMin = totalDiffMin % 60;
