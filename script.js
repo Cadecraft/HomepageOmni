@@ -1,6 +1,6 @@
 // Homepage Omni
 // Cadecraft
-// v0.3.1; 2024/07/22
+// v0.4.0; 2024/07/22
 
 /* TODO:
 	Feat: clock(s) for different time zones (configurable)
@@ -13,19 +13,23 @@
 */
 
 // Data
-// { key, href, priority }
-let links = [
-	{ link_key: "Example Link", link_href: "https://example.com", link_priority: 0 },
-	{ link_key: "Google", link_href: "https://google.com", link_priority: 0 },
-	{ link_key: "Gmail", link_href: "https://mail.google.com", link_priority: 0 },
-	{ link_key: "GitHub", link_href: "https://github.com", link_priority: 0 },
-	{ link_key: "YouTube", link_href: "https://youtube.com/", link_priority: 0 },
-	{ link_key: "LeetCode", link_href: "https://leetcode.com/problemset", link_priority: 0 }
-];
 let links_filtered = [];
 let selectedi = 0; // The current index selected from links_filtered
 let display_when_empty = true; // Whether to display when the box is empty
 let error_text = "";
+let config_default = {
+	"display_when_empty": true,
+	// Links: { link key, link href, link priority }
+	"links": [
+		{ key: "Example Link", href: "https://example.com", priority: 0 },
+		{ key: "Google", href: "https://google.com", priority: 0 },
+		{ key: "Gmail", href: "https://mail.google.com", priority: 0 },
+		{ key: "GitHub", href: "https://github.com", priority: 0 },
+		{ key: "YouTube", href: "https://youtube.com/", priority: 0 },
+		{ key: "LeetCode", href: "https://leetcode.com/problemset", priority: 0 }
+	]
+};
+let config = structuredClone(config_default);
 
 // Determine browser type
 // TODO: better way of determining browser type?
@@ -34,8 +38,8 @@ let is_chrome = navigator.userAgent.includes("Chrome");
 // Set a key and return whether successful
 function setLink(new_key, new_href) {
 	let foundIndex = -1;
-	for (let i = 0; i < links.length; i++) {
-		if (links[i].link_key.toLowerCase().trim() == new_key.toLowerCase().trim()) {
+	for (let i = 0; i < config.links.length; i++) {
+		if (config.links[i].key.toLowerCase().trim() == new_key.toLowerCase().trim()) {
 			foundIndex = i;
 		}
 	}
@@ -51,25 +55,25 @@ function setLink(new_key, new_href) {
 			error_text = "URL cannot contain commas";
 			return false;
 		} else {
-			links.push({
-				link_key: new_key.trim(),
-				link_href: new_href.trim()
+			config.links.push({
+				key: new_key.trim(),
+				href: new_href.trim()
 			});
 		}
 	} else {
 		// Found: set
 		// TODO: other checks? Validate the value?
-		links[foundIndex].link_href = new_href.trim();
+		config.links[foundIndex].href = new_href.trim();
 	}
-	saveLinks();
+	saveConfig();
 	return true;
 }
 
 // Delete a key and return whether successful
 function deleteLink(new_key) {
 	let foundIndex = -1;
-	for (let i = 0; i < links.length; i++) {
-		if (links[i].link_key.toLowerCase().trim() == new_key.toLowerCase().trim()) {
+	for (let i = 0; i < config.links.length; i++) {
+		if (config.links[i].key.toLowerCase().trim() == new_key.toLowerCase().trim()) {
 			foundIndex = i;
 		}
 	}
@@ -79,9 +83,9 @@ function deleteLink(new_key) {
 		return false;
 	} else {
 		// Found: set
-		links.splice(foundIndex, 1);
+		config.links.splice(foundIndex, 1);
 	}
-	saveLinks();
+	saveConfig();
 	return true;
 }
 
@@ -91,11 +95,11 @@ function processInput(new_value) {
 	if (new_value.startsWith(":")) {
 		// Command
 		if (new_value == ":show") {
-			display_when_empty = true;
-			saveLinks();
+			config.display_when_empty = true;
+			saveConfig();
 		} else if (new_value == ":hide") {
-			display_when_empty = false;
-			saveLinks();
+			config.display_when_empty = false;
+			saveConfig();
 		} else if (new_value.startsWith(":delete")) {
 			// Delete
 			return deleteLink(new_value.substring(7).trim());
@@ -116,13 +120,17 @@ function processInput(new_value) {
 			href_value = href_value.trim();
 			return setLink(key_value, href_value);
 		} else if (new_value.startsWith(":export")) {
-			// Export as a .csv file
+			// Export as a .json file
 			exportFile();
 			return true;
 		} else if (new_value.startsWith(":import")) {
-			// Import from a .csv file
+			// Import from a .json file
 			// Activate file select
 			document.getElementById("file-uploader").click();
+			return true;
+		} else if (new_value.startsWith(":resetconfig")) {
+			config = structuredClone(config_default);
+			saveConfig();
 			return true;
 		} else if (new_value.startsWith(":help")) {
 			// Tell to read the README.md
@@ -151,7 +159,7 @@ function processInput(new_value) {
 			// Go to the link
 			if (selectedi < 0) selectedi = 0;
 			else if (selectedi >= links_filtered.length) selectedi = links_filtered.length - 1;
-			window.location.href = links_filtered[selectedi].link_href;
+			window.location.href = links_filtered[selectedi].href;
 			return true;
 		}
 	}
@@ -160,17 +168,17 @@ function processInput(new_value) {
 // Compare two links
 function compareLinks(a, b) {
 	// First, priority
-	if (a.link_priority > b.link_priority) return -1;
-	else if (a.link_priority < b.link_priority) return 1;
+	if (a.priority > b.priority) return -1;
+	else if (a.priority < b.priority) return 1;
 	// Second, key
-	if (a.link_key < b.link_key) return -1;
-	else if (a.link_key > b.link_key) return 1;
+	if (a.key < b.key) return -1;
+	else if (a.key > b.key) return 1;
 	else return 0;
 }
 
 // Sort links alphabetically
 function sortLinks() {
-	links.sort(compareLinks);
+	config.links.sort(compareLinks);
 	links_filtered.sort(compareLinks);
 }
 
@@ -185,8 +193,8 @@ function updateFiltered(new_value) {
 	let filterTo = trimmed;
 	if (trimmed == "") {
 		// Empty: show or hide, based on the setting
-		if (display_when_empty) {
-			links_filtered = links.slice();
+		if (config.display_when_empty) {
+			links_filtered = config.links.slice();
 		} else {
 			links_filtered = [];
 		}
@@ -210,14 +218,14 @@ function updateFiltered(new_value) {
 	if (shouldFilter) {
 		// Not empty: filter
 		links_filtered = [];
-		for (const link of links) {
+		for (const link of config.links) {
 			// TODO: ignore all spaces for easier search?
-			let matchesFilter = link.link_key.toLowerCase().includes(filterTo);
+			let matchesFilter = link.key.toLowerCase().includes(filterTo);
 			if (matchesFilter) {
 				links_filtered.push(structuredClone(link));
-				if (link.link_key.toLowerCase().startsWith(filterTo)) {
+				if (link.key.toLowerCase().startsWith(filterTo)) {
 					// First priority: starts with
-					links_filtered[links_filtered.length - 1].link_priority = 1;
+					links_filtered[links_filtered.length - 1].priority = 1;
 				}
 			}
 		}
@@ -243,50 +251,32 @@ function updateFiltered(new_value) {
 
 // Export to a file
 function exportFile() {
-	let text = "";
-	for (const link of links) {
-		text += link.link_key + ", " + link.link_href + "\n";
-	}
+	// Simply export the config as a prettified JSON
+	let text = JSON.stringify(config, null, 4);
+	// Download the config
 	let elem = document.createElement("a");
 	elem.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(text));
-	elem.setAttribute("download", "links.csv");
+	elem.setAttribute("download", "homepage_omni_config.json");
 	elem.style.display = "none";
 	document.body.appendChild(elem);
 	elem.click();
 	document.body.removeChild(elem);
 }
 
-// Import from raw text (the CSV format that is exported)
-function importFromText(theText) {
-	const lines = theText.split(/[\r\n]+/);
-	links = [];
-	for (const row of lines) {
-		// Link key, link URL
-		// Key can contain commas, but URL cannot, so parse from the back
-		let thisURL = "";
-		let thisKey = "";
-		let reachedComma = false;
-		for (let i = row.length - 1; i >= 0; i--) {
-			if (!reachedComma) {
-				if (row[i] == ',') reachedComma = true;
-				else thisURL = row[i] + thisURL;
-			} else {
-				thisKey = row[i] + thisKey;
-			}
-		}
-		thisURL = thisURL.trim();
-		thisKey = thisKey.trim();
-		console.log(thisKey + " : " + thisURL);
-		// Do not add if the URL or the key do not exist or are invalid
-		if (thisURL.length <= 0 || thisKey.length <= 0) continue;
-		links.push({ link_key: thisKey, link_href: thisURL, link_priority: 0 });
-	}
+// Import from raw text (the .json format that is exported)
+function importFromString(theText) {
+	// Simply parse the config from a JSON
+	config = JSON.parse(theText);
+	// Fill in any missing fields with the defaults
+	// TODO: impl filling in missing fields
+	// TODO: Do not add if the URL or the key do not exist or are invalid
+	// Update
 	sortLinks();
 	updateFiltered("");
 	render();
 	// Save the links to storage after loading them (assuming no errors)
 	// TODO: display result/error if needed?
-	saveLinks();
+	saveConfig();
 }
 
 // Upload a file
@@ -300,7 +290,7 @@ document.getElementById("file-uploader").addEventListener("change", () => {
 		// Loaded the text content
 		const textContent = reader.result;
 		// Update from the text
-		importFromText(textContent);
+		importFromString(textContent);
 	});
 	reader.readAsText(file);
 });
@@ -320,8 +310,8 @@ function render() {
 		if (i == selectedi) new_div.className = "linkitem_selected";
 		else new_div.className = "linkitem_normal";
 		const new_a = document.createElement("a");
-		new_a.href = links_filtered[i].link_href;
-		new_a.innerText = links_filtered[i].link_key;
+		new_a.href = links_filtered[i].href;
+		new_a.innerText = links_filtered[i].key;
 		new_div.appendChild(new_a);
 		listbox.appendChild(new_div);
 		first_item = false;
@@ -371,44 +361,35 @@ omnibar.addEventListener("keypress", (e) => {
 	}
 });
 
-// Save links and config to storage, if possible
-async function saveLinks() {
+// Save config to storage, if possible
+async function saveConfig() {
 	if (is_chrome) {
 		// Use chrome storage
 		chrome.storage.local.set({
-			"userlinks": links,
-			"display_when_empty": display_when_empty
+			"config": config
 		});
 	} else {
 		// Use cross-browser storage
 		browser.storage.local.set({
-			"userlinks": links,
-			"display_when_empty": display_when_empty
-
+			"config": config
 		});
 	}
 }
 
-// Load links and config from storage, if possible, and render
-async function loadLinks() {
+// Load config from storage, if possible, and render
+async function loadConfig() {
 	if (is_chrome) {
 		// Use chrome storage
 		// TODO: test more in chrome
-		chrome.storage.local.get(["userlinks", "display_when_empty"], (result) => {
+		chrome.storage.local.get(["config"], (result) => {
 			// Based on result
 			if (
 				result != null && result != undefined
 				&& Object.keys(result).length !== 0
-				&& "userlinks" in result
-				&& "display_when_empty" in result
+				&& "config" in result
 			) {
 				// Update to result
-				links = [];
-				for (const value of result["userlinks"]) {
-					links.push(value); // Value should be a link object { link_key: "", ... }
-				}
-				// Update to config
-				display_when_empty = result["display_when_empty"];
+				config = result["config"];
 				// Update
 				sortLinks();
 				updateFiltered("");
@@ -417,21 +398,15 @@ async function loadLinks() {
 		});
 	} else {
 		// Use cross-browser storage
-		let result = await browser.storage.local.get(["userlinks", "display_when_empty"]);
+		let result = await browser.storage.local.get(["config"]);
 		// Based on result
 		if (
 			result != null && result != undefined
 			&& Object.keys(result).length !== 0
-			&& "userlinks" in result
-			&& "display_when_empty" in result
+			&& "config" in result
 		) {
 			// Update to result
-			links = [];
-			for (const value of result["userlinks"]) {
-				links.push(value); // Value should be a link object { link_key: "", ... }
-			}
-			// Update to config
-			display_when_empty = result["display_when_empty"];
+			config = result["config"];
 			// Update
 			sortLinks();
 			updateFiltered("");
@@ -444,5 +419,5 @@ async function loadLinks() {
 sortLinks();
 updateFiltered("");
 render();
-// Load links from storage, if possible
-loadLinks();
+// Load config from storage, if possible
+loadConfig();

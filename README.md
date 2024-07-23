@@ -27,6 +27,8 @@ To add the extension to Chrome:
 
 Improved installation instructions will be added once this project becomes more complete. If you experience problems or have suggestions, feel free to create a GitHub issue.
 
+Important breaking change: the names of keys for links has changed
+
 ## Commands
 
 Type any string to filter through the list of links (described below); press enter to go to the link.
@@ -38,14 +40,24 @@ Commands are prefixed with `:`.
 - `:hide` - Hide all links by default
 - `:set {link name} {link URL}` - Add or change a link with the given name
 - `:delete {link name}` - Delete the link with the given name
-- `:export` - Export/save the list of links to a .csv file
-- `:import` - Import/load the list of links from a .csv file
+- `:export` - Export/save the configuration to a .json file
+- `:import` - Import/load the configuration from a .json file; be careful and only import files you trust
+- `:resetconfig` - Reset the entire configuration
+
+<!-- TODO: version command -->
 
 Addresses are prefixed with `=`.
 - `=example.com` - Go to https://example.com
 
 Web searches are prefixed with `-`.
 - `-marsupials` - Google search for "marsupials"
+
+## Configuration file
+
+The configuration (the list of links, your settings, etc.) can be exported, edited, and imported as a `.json` file.
+For some advanced configuration, you cannot use the omnibar commands and must edit the file manually.
+
+This configuration is also automatically locally stored in your browser whenever you import it, reset it, or make a change.
 
 ## Filtering Method
 
@@ -63,4 +75,4 @@ The links are sorted using these rules:
 
 This extension uses the following permissions:
 - `webNavigation` - to follow links
-- `storage` - to store only the links you add; nothing else is stored
+- `storage` - to locally store only your configuration; nothing else is stored
