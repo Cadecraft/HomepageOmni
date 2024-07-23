@@ -1,15 +1,18 @@
 // Homepage Omni
 // Cadecraft
-// v0.4.1; 2024/07/22
+// v0.4.3; 2024/07/23
 
 /* TODO:
-	Feat: clock(s) for different time zones (configurable)
-	Feat: schedule stuff (for the hour before an "event", show the name and a ticking timer)
 	Feat: max height and scroll bar for the list of links
 	Feat: allow changing your search engine
-	Feat: entire config file: schedules, clocks, search engine, links list, colors (not just a csv--use a JSON for easy parsing)
-	Doc: document the config file syntax and available options
+	Feat: entire config file: schedules, clocks, search engine, links list, colors
+	Feat: sane, simple, minimal, defaults
+	Doc: better-document the config file syntax and available options
+	Doc: better screenshot
+	Doc: have an extra "cool example config" file in this repo
 	Colors: change slightly? Allow customization?
+	Test: test the day of the week schedule thing
+	Test: clocks for different time zones
 	Release: publish for Firefox?
 */
 
@@ -38,7 +41,16 @@ let config_default = {
 		{ name: "10:49am", hr: 10, min: 49, rep: "SuMTuWThFSa" },
 		{ name: "11am", hr: 11, min: 0, },
 		{ name: "12pm", hr: 12, min: 0, rep: "SuMTuWThFSa" }
-	]
+	],
+	"event_display_duration_mins": 60,
+	// Clocks
+	// TODO: document these in README (value of "none" = do not show the clock)
+	// TODO: by default, only show clock 1
+	"clock1_name": "",
+	"clock2_name": "hidden",
+	"clock2_utc_offset": 0,
+	"clock3_name": "hidden",
+	"clock3_utc_offset": 0
 };
 // The actual config
 let config = structuredClone(config_default);
@@ -433,19 +445,30 @@ async function loadConfig() {
 	}
 }
 
-// Pad the time into a string
+// Time and date utilities
+const weekdays = ["Sun.", "Mon.", "Tues.", "Wed.", "Thurs.", "Fri.", "Sat."];
+const weekdaysChar = ['Su', 'M', 'Tu', 'W', 'Th', 'F', 'Sa'];
 function padTime(time) {
 	let res = "" + time;
 	if (res.length < 2) res = "0" + res;
 	return res;
 }
 
+// Render a specific clock given its ID, a date, a region name, and whether to use UTC (for global clocks)
+function renderClock(clockid, d, region, useUTC) {
+	document.getElementById("clockitem" + clockid).style.display = "inline";
+	if (useUTC) {
+		document.getElementById("clocktext" + clockid).innerText = padTime(d.getUTCHours()) + ":" + padTime(d.getUTCMinutes());
+		document.getElementById("datetext" + clockid).innerText = d.getUTCFullYear() + "/" + padTime(d.getUTCMonth() + 1) + "/" + padTime(d.getUTCDate()) + " - " + weekdays[d.getUTCDay()];
+	} else {
+		document.getElementById("clocktext" + clockid).innerText = padTime(d.getHours()) + ":" + padTime(d.getMinutes());
+		document.getElementById("datetext" + clockid).innerText = d.getFullYear() + "/" + padTime(d.getMonth() + 1) + "/" + padTime(d.getDate()) + " - " + weekdays[d.getDay()];
+	}
+	document.getElementById("regiontext" + clockid).innerText = region;
+}
+
 // Update clock and time
-const clocktext = document.getElementById("clocktext");
-const datetext = document.getElementById("datetext");
 const eventbox = document.getElementById("eventbox");
-const weekdays = ["Sun.", "Mon.", "Tues.", "Wed.", "Thurs.", "Fri.", "Sat."];
-const weekdaysChar = ['Su', 'M', 'Tu', 'W', 'Th', 'F', 'Sa'];
 function updateClock() {
 	// Current time and date
 	let d = new Date();
@@ -454,10 +477,24 @@ function updateClock() {
 	let currSec = d.getSeconds();
 	let currWeekday = d.getDay();
 	let currWeekdayChar = weekdaysChar[currWeekday];
-	// Clock display
-	clocktext.innerText = padTime(currHr) + ":" + padTime(currMin);
-	// Date display
-	datetext.innerText = d.getFullYear() + "/" + (d.getMonth() + 1) + "/" + d.getDate() + " - " + weekdays[currWeekday];
+	// Display all clocks
+	if (config.clock1_name == "hidden") {
+		document.getElementById("clockitem1").style.display = "none";
+	} else {
+		renderClock("1", d, config.clock1_name, false);
+	}
+	if (config.clock2_name == "hidden") {
+		document.getElementById("clockitem2").style.display = "none";
+	} else {
+		let d2 = new Date(new Date().getTime() + config.clock2_utc_offset * 3600 * 1000);
+		renderClock("2", d2, config.clock2_name, true);
+	}
+	if (config.clock3_name == "hidden") {
+		document.getElementById("clockitem3").style.display = "none";
+	} else {
+		let d3 = new Date(new Date().getTime() + config.clock3_utc_offset * 3600 * 1000);
+		renderClock("3", d3, config.clock3_name, true);
+	}
 	// Events timers
 	while (eventbox.firstChild) {
 		eventbox.removeChild(eventbox.lastChild);
@@ -466,15 +503,14 @@ function updateClock() {
 		// { name, hr, min }
 		if (("rep" in ev) && !(ev.rep.includes(currWeekdayChar))) {
 			// Not the right weekday
-			// TODO: test
+			// TODO: test more
 			continue;
 		}
 		let totalDiffMin = (ev.hr * 60 + ev.min) - (currHr * 60 + currMin + 1);
 		let diffHr = Math.floor(totalDiffMin / 60);
 		let diffMin = totalDiffMin % 60;
 		let diffSec = 60 - currSec;
-		if (totalDiffMin < 60 && totalDiffMin >= 0) {
-			// TODO: add a config for the number of minutes before to start showing timing
+		if (totalDiffMin < config.event_display_duration_mins && totalDiffMin >= 0) {
 			let evdisp = document.createElement("span");
 			evdisp.className = "event";
 			if (diffHr == 0) {

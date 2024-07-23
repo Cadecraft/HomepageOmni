@@ -26,9 +26,18 @@ To add the extension to Chrome:
 3. Turn on Developer Mode in the top right
 4. In the top left, Load Unpacked and upload this entire folder
 
-Improved installation instructions will be added once this project becomes more complete. If you experience problems or have suggestions, feel free to create a GitHub issue.
+This project will be released (signed and published) once it becomes more complete, then there will be better installation instructions. If you experience problems or have suggestions, feel free to create a GitHub issue.
 
-Important breaking change: the names of keys for links has changed
+## Preface
+
+Since this extension's goal is to be highly configurable while staying lightweight,
+**learning and configuring it can be complicated!**
+
+Take your time learning the simple commands with the default config, then once you want
+to customize something, type `:export` to download your `.json` file, open it in a text editor, then read about anything you
+want to change here in this readme.
+
+It's actually a lot simpler in practice than the documentation makes it seem.
 
 ## Commands
 
@@ -37,13 +46,13 @@ Type any string to filter through the list of links (described below); press ent
 The up and down arrow keys can be used to switch between links from the filtered list.
 
 Commands are prefixed with `:`.
-- `:show` - Show all links by default (when the omnibar is empty)
-- `:hide` - Hide all links by default
 - `:set {link name} {link URL}` - Add or change a link with the given name
 - `:delete {link name}` - Delete the link with the given name
+- `:show` - Show all links by default (when the omnibar is empty)
+- `:hide` - Hide all links by default
 - `:export` - Export/save the configuration to a .json file
 - `:import` - Import/load the configuration from a .json file; be careful and only import files you trust
-- `:resetconfig` - Reset the entire configuration
+- `:resetconfig` - Reset the entire configuration (useful if corrupted)
 
 <!-- TODO: version command -->
 
@@ -60,12 +69,15 @@ Web searches are prefixed with `-`.
 The configuration (the list of links, your settings, etc.) can be exported, edited, and imported as a `.json` file.
 For some advanced configuration, you cannot use the omnibar commands and must edit the file manually.
 
-Keys:
-- `display_when_empty`: bool (default `true`)
-- `links`: a list of link objects (see below)
-- `events`: a list of event objects (see below)
+This configuration is automatically locally stored in your browser whenever you import it, reset it, or make a change.
 
-Link object format example
+If your configuration ever gets corrupted, use the `:resetconfig` command.
+
+### Links:
+- `display_when_empty` - bool (default `true`; whether to show all links by default when the omnibar is empty)
+- `links` - a list of link objects (see below)
+
+Link object format example:
 ```json
 {
     "key": "Example Link",
@@ -74,9 +86,11 @@ Link object format example
 }
 ```
 
-Event object format example (creates an event Lunch Time at 12:25pm repeating each work weekday)
+### Events:
+- `events` - a list of event objects (see below)
+- `event_display_duration_mins` - integer (default `60`; how many minutes before an event to display a countdown at the bottom)
 
-Note: hours are from 1 to 23; weekdays are 'Su', 'M', 'Tu', 'W', 'Th', 'F', and 'Sa'; if "rep" is not defined the event always repeats
+Event object format example (creates an event Lunch Time at 12:25pm repeating each work weekday):
 ```json
 {
     "name": "Lunch Time",
@@ -85,12 +99,31 @@ Note: hours are from 1 to 23; weekdays are 'Su', 'M', 'Tu', 'W', 'Th', 'F', and 
     "rep": "MTuWThF"
 }
 ```
+*Note: hours are from 1 to 23; weekdays are 'Su', 'M', 'Tu', 'W', 'Th', 'F', and 'Sa'; if "rep" is not defined the event always repeats.*
 
-This configuration is also automatically locally stored in your browser whenever you import it, reset it, or make a change.
+### Clock:
+- `clock1_name` - the name of the main clock (center), which shows local time (default `""` (empty string))
+- `clock2_name` - the name of the second clock (left) (default `"hidden"`)
+- `clock2_utc_offset` - the UTC offset of the second clock (ex. for Tokyo, which is UTC+9, use `+9`)
+- `clock3_name` - the name of the third clock (right) (default `"hidden"`)
+- `clock3_utc_offset` - the UTC offset of the third clock
+
+If you set the name of a clock to be `"hidden"`, it will not appear; to hide all clocks, set them all to `"hidden"`.
+
+No matter what you change in this section, your local time will be used for the countdowns to events.
+
+If you choose to use multiple clocks, it is recommended to set Clock 1's name to `"Local"` for clarity.
+Make sure you've researched the right UTC offset for any cities you want to add!
+
+I find that adding a related emoji to clock titles helps improve the appearance of the page as a whole.
+
+### Full example file:
+Since setting up the configuration file could be complicated, find an example in this repository or,
+in the omnibar, simply `:export` it to get a copy of your current configuration.
 
 ## Filtering Method
 
-The links are filtered using these rules:
+When you type in the omnibar, the links are filtered using these rules:
 - Only links that contain the inputted filter string
 - Case insensitive
 - Left and right trimmed for spaces

@@ -62,6 +62,14 @@ div.linkitem_normal {
 div.linkitem_selected {
 	background-color: #42414d;
 }
+div.clockcontainer {
+	display: flex;
+	justify-content: space-evenly;
+}
+div.clockitem {
+	width: auto;
+	height: 50px;
+}
 a, a:visited {
 	color: #5aa5c2;
 	text-decoration: none;
@@ -92,7 +100,7 @@ span.clock {
 	font-size: 24px;
 }
 span.date {
-	color: #42414d;
+	color: #85849c;
 }
 span.event {
 	color: #5aa5c2;

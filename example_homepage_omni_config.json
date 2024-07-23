@@ -36,17 +36,20 @@
         {
             "name": "10am",
             "hr": 10,
-            "min": 0
+            "min": 0,
+            "rep": "SuMTuWThFSa"
         },
         {
             "name": "10:30am",
             "hr": 10,
-            "min": 30
+            "min": 30,
+            "rep": "SuMTuWThFSa"
         },
         {
             "name": "10:49am",
             "hr": 10,
-            "min": 49
+            "min": 49,
+            "rep": "SuMTuWThFSa"
         },
         {
             "name": "11am",
@@ -56,7 +59,14 @@
         {
             "name": "12pm",
             "hr": 12,
-            "min": 0
+            "min": 0,
+            "rep": "SuMTuWThFSa"
         }
-    ]
+    ],
+    "event_display_duration_mins": 60,
+    "clock1_name": "",
+    "clock2_name": "hidden",
+    "clock2_utc_offset": 0,
+    "clock3_name": "hidden",
+    "clock3_utc_offset": 0
 }
