@@ -1,13 +1,16 @@
 // Homepage Omni
 // Cadecraft
-// v0.3.0; 2024/06/21
+// v0.3.1; 2024/07/22
 
-// TODO:
-// Max height and scroll bar for the list of links
-// Allow changing your search engine
-// Tabbing from the bar doesn't work well
-// Colors: change slightly?
-// Release: publish for Firefox?
+/* TODO:
+	Feat: clock(s) for different time zones (configurable)
+	Feat: max height and scroll bar for the list of links
+	Feat: allow changing your search engine
+	Feat: entire config file: schedules, clocks, search engine, links list, colors (not just a csv--use a JSON for easy parsing)
+	Doc: document the config file syntax and available options
+	Colors: change slightly? Allow customization?
+	Release: publish for Firefox?
+*/
 
 // Data
 // { key, href, priority }
