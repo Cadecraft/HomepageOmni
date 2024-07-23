@@ -3,28 +3,28 @@
     "links": [
         {
             "key": "GitHub",
-            "link_href": "https://github.com",
-            "link_priority": 0
+            "href": "https://github.com",
+            "priority": 0
         },
         {
             "key": "Gmail",
-            "link_href": "https://mail.google.com",
-            "link_priority": 0
+            "href": "https://mail.google.com",
+            "priority": 0
         },
         {
             "key": "Google",
-            "link_href": "https://google.com",
-            "link_priority": 0
+            "href": "https://google.com",
+            "priority": 0
         },
         {
             "key": "LeetCode",
-            "link_href": "https://leetcode.com/problemset",
-            "link_priority": 0
+            "href": "https://leetcode.com/problemset",
+            "priority": 0
         },
         {
             "key": "YouTube",
-            "link_href": "https://youtube.com/",
-            "link_priority": 0
+            "href": "https://youtube.com/",
+            "priority": 0
         }
     ]
 }

@@ -1,9 +1,10 @@
 // Homepage Omni
 // Cadecraft
-// v0.4.0; 2024/07/22
+// v0.4.1; 2024/07/22
 
 /* TODO:
 	Feat: clock(s) for different time zones (configurable)
+	Feat: schedule stuff (for the hour before an "event", show the name and a ticking timer)
 	Feat: max height and scroll bar for the list of links
 	Feat: allow changing your search engine
 	Feat: entire config file: schedules, clocks, search engine, links list, colors (not just a csv--use a JSON for easy parsing)
@@ -19,7 +20,7 @@ let display_when_empty = true; // Whether to display when the box is empty
 let error_text = "";
 let config_default = {
 	"display_when_empty": true,
-	// Links: { link key, link href, link priority }
+	// Links: { key (display name), href (URL to go to), priority (should be 0) }
 	"links": [
 		{ key: "Example Link", href: "https://example.com", priority: 0 },
 		{ key: "Google", href: "https://google.com", priority: 0 },
@@ -27,6 +28,14 @@ let config_default = {
 		{ key: "GitHub", href: "https://github.com", priority: 0 },
 		{ key: "YouTube", href: "https://youtube.com/", priority: 0 },
 		{ key: "LeetCode", href: "https://leetcode.com/problemset", priority: 0 }
+	],
+	// Events: { name (display name), hr (0-23), min (0-59) }
+	"events": [
+		{ name: "10am", hr: 10, min: 0 },
+		{ name: "10:30am", hr: 10, min: 30 },
+		{ name: "10:49am", hr: 10, min: 49 },
+		{ name: "11am", hr: 11, min: 0 },
+		{ name: "12pm", hr: 12, min: 0 }
 	]
 };
 let config = structuredClone(config_default);
@@ -274,6 +283,7 @@ function importFromString(theText) {
 	sortLinks();
 	updateFiltered("");
 	render();
+	updateClock();
 	// Save the links to storage after loading them (assuming no errors)
 	// TODO: display result/error if needed?
 	saveConfig();
@@ -316,6 +326,8 @@ function render() {
 		listbox.appendChild(new_div);
 		first_item = false;
 	}
+	// Update the clock
+	updateClock();
 }
 
 // On updating
@@ -394,6 +406,7 @@ async function loadConfig() {
 				sortLinks();
 				updateFiltered("");
 				render();
+				updateClock();
 			}
 		});
 	} else {
@@ -411,13 +424,66 @@ async function loadConfig() {
 			sortLinks();
 			updateFiltered("");
 			render();
+			updateClock();
 		}
 	}
 }
+
+// Pad the time into a string
+function padTime(time) {
+	let res = "" + time;
+	if (res.length < 2) res = "0" + res;
+	return res;
+}
+
+// Update clock and time
+const clocktext = document.getElementById("clocktext");
+const eventbox = document.getElementById("eventbox");
+function updateClock() {
+	// Current time
+	let d = new Date();
+	let currHr = d.getHours();
+	let currMin = d.getMinutes();
+	let currSec = d.getSeconds();
+	// Clock display
+	clocktext.innerText = padTime(currHr) + ":" + padTime(currMin);
+	// Events timers
+	while (eventbox.firstChild) {
+		eventbox.removeChild(eventbox.lastChild);
+	}
+	for (ev of config.events) {
+		// { name, hr, min }
+		let totalDiffMin = (ev.hr * 60 + ev.min) - (currHr * 60 + currMin);
+		let diffHr = Math.floor(totalDiffMin / 60);
+		let diffMin = totalDiffMin % 60;
+		let diffSec = 60 - currSec;
+		if (totalDiffMin < 60 && totalDiffMin >= 0) {
+			// TODO: add a config for the number of minutes before to start showing timing
+			let evdisp = document.createElement("span");
+			evdisp.className = "event";
+			if (diffHr == 0) {
+				evdisp.innerText = ev.name + " in " + padTime(diffMin) + " min " + padTime(diffSec) + " sec";
+			} else {
+				evdisp.innerText = ev.name + " in " + padTime(diffHr) + " hr " + padTime(diffMin) + " min " + padTime(diffSec) + " sec";
+			}
+			eventbox.appendChild(evdisp);
+			let newbr = document.createElement("br");
+			eventbox.appendChild(newbr);
+		}
+	}
+}
+
+// Update each second (only if the page is visible)
+setInterval(() => {
+	if (!document.hidden) {
+		updateClock();
+	}
+}, 1000);
 
 // First time loading the page
 sortLinks();
 updateFiltered("");
 render();
+updateClock();
 // Load config from storage, if possible
 loadConfig();
