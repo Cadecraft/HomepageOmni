@@ -13,9 +13,14 @@
 	<!-- Body -->
 	<div class="container_outer">
 		<div class="container_inner">
-			<div style="height: 30%; display: block;"></div>
+			<div style="height: 26%; display: block;"></div>
 			<!-- File upload (hidden by default) -->
 			<input id="file-uploader" type="file" style="display:none;"/>
+			<!-- Clock -->
+			<span id="datetext" class="date">2024/01/01 - Mon.</span>
+			<br>
+			<span id="clocktext" class="clock">12:00</span>
+			<br><br>
 			<!-- Help text -->
 			<span id="helptext" class="normal"></span>
 			<br><br>
@@ -27,6 +32,11 @@
 			<div id="listbox" class="listbox">
 				<div class="linkitem_selected"><a>Example Link</a></div>
 				<div class="linkitem_normal"><a>Example Link</a></div>
+			</div>
+			<br><br>
+			<!-- Event reminders -->
+			<div id="eventbox">
+				<span class="event">Example Event</span>
 			</div>
 		</div>
 	</div>

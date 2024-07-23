@@ -87,3 +87,15 @@ span.normal {
 span.error {
 	color: #e66155;
 }
+span.clock {
+	color: #d0cfe6;
+	font-size: 24px;
+}
+span.date {
+	color: #42414d;
+}
+span.event {
+	color: #5aa5c2;
+	text-decoration: none;
+	outline: none;
+}
