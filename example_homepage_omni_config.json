@@ -2,6 +2,11 @@
     "display_when_empty": true,
     "links": [
         {
+            "key": "Example Link",
+            "href": "https://example.com",
+            "priority": 0
+        },
+        {
             "key": "GitHub",
             "href": "https://github.com",
             "priority": 0
@@ -25,6 +30,33 @@
             "key": "YouTube",
             "href": "https://youtube.com/",
             "priority": 0
+        }
+    ],
+    "events": [
+        {
+            "name": "10am",
+            "hr": 10,
+            "min": 0
+        },
+        {
+            "name": "10:30am",
+            "hr": 10,
+            "min": 30
+        },
+        {
+            "name": "10:49am",
+            "hr": 10,
+            "min": 49
+        },
+        {
+            "name": "11am",
+            "hr": 11,
+            "min": 0
+        },
+        {
+            "name": "12pm",
+            "hr": 12,
+            "min": 0
         }
     ]
 }

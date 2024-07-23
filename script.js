@@ -18,6 +18,8 @@ let links_filtered = [];
 let selectedi = 0; // The current index selected from links_filtered
 let display_when_empty = true; // Whether to display when the box is empty
 let error_text = "";
+// The default config
+// TODO: set some sane, simple, minimal defaults
 let config_default = {
 	"display_when_empty": true,
 	// Links: { key (display name), href (URL to go to), priority (should be 0) }
@@ -29,7 +31,7 @@ let config_default = {
 		{ key: "YouTube", href: "https://youtube.com/", priority: 0 },
 		{ key: "LeetCode", href: "https://leetcode.com/problemset", priority: 0 }
 	],
-	// Events: { name (display name), hr (0-23), min (0-59) }
+	// Events: { name (display name), hr (1-23), min (0-59) }
 	"events": [
 		{ name: "10am", hr: 10, min: 0 },
 		{ name: "10:30am", hr: 10, min: 30 },
@@ -38,6 +40,7 @@ let config_default = {
 		{ name: "12pm", hr: 12, min: 0 }
 	]
 };
+// The actual config
 let config = structuredClone(config_default);
 
 // Determine browser type
@@ -279,6 +282,7 @@ function importFromString(theText) {
 	// Fill in any missing fields with the defaults
 	// TODO: impl filling in missing fields
 	// TODO: Do not add if the URL or the key do not exist or are invalid
+	// TODO: Check if corrupted
 	// Update
 	sortLinks();
 	updateFiltered("");
@@ -453,7 +457,7 @@ function updateClock() {
 	}
 	for (ev of config.events) {
 		// { name, hr, min }
-		let totalDiffMin = (ev.hr * 60 + ev.min) - (currHr * 60 + currMin);
+		let totalDiffMin = (ev.hr * 60 + ev.min) - (currHr * 60 + currMin + 1);
 		let diffHr = Math.floor(totalDiffMin / 60);
 		let diffMin = totalDiffMin % 60;
 		let diffSec = 60 - currSec;

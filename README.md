@@ -4,7 +4,8 @@ A custom, lightweight homepage/new tab browser extension that lets
 you create and access quick links via an omnibar
 
 - Productive: keyboard-based mouse-free interaction, available at any new tab page
-- Customizable: add any links
+- Customizable: add any links, create events, etc. through a portable config file
+- Simple: no complicated graphics or bulky UI elements
 - Private: nothing you type in the bar is recorded until you hit enter
 
 ![A screenshot of HomepageOmni](screenshot.jpg "A screenshot of HomepageOmni")
@@ -54,8 +55,33 @@ Web searches are prefixed with `-`.
 
 ## Configuration file
 
+<!-- TODO: document better -->
+
 The configuration (the list of links, your settings, etc.) can be exported, edited, and imported as a `.json` file.
 For some advanced configuration, you cannot use the omnibar commands and must edit the file manually.
+
+Keys:
+- `display_when_empty`: bool (default `true`)
+- `links`: a list of link objects (see below)
+- `events`: a list of event objects (see below)
+
+Link object format example
+```json
+{
+    "key": "Example Link",
+    "href": "https://example.com",
+    "priority": 0
+}
+```
+
+Event object format example (creates an event Lunch Time at 12:25pm) (hours are from 1 to 23)
+```json
+{
+    "name": "Lunch Time",
+    "hr": 12,
+    "min": 25
+}
+```
 
 This configuration is also automatically locally stored in your browser whenever you import it, reset it, or make a change.
 
