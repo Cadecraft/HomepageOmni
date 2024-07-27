@@ -8,7 +8,9 @@ you create and access quick links via an omnibar
 - Simple: no complicated graphics or bulky UI elements
 - Private: nothing you type in the bar is recorded until you hit enter
 
-![A screenshot of HomepageOmni](screenshot.jpg "A screenshot of HomepageOmni")
+![A screenshot of HomepageOmni](screenshot.jpg "A screenshot of Homepage Omni")
+
+*This screenshot uses the* `examples/feature_showcase_config.json` *configuration*
 
 ## Installation
 
@@ -28,6 +30,8 @@ To add the extension to Chrome:
 
 This project will be released (signed and published) once it becomes more complete, then there will be better installation instructions. If you experience problems or have suggestions, feel free to create a GitHub issue.
 
+Keep reading to figure out how to configure Homepage Omni!
+
 ## Preface
 
 Since this extension's goal is to be highly configurable while staying lightweight,
@@ -37,13 +41,13 @@ Take your time learning the simple commands with the default config, then once y
 to customize something, type `:export` to download your `.json` file, open it in a text editor, then read about anything you
 want to change here in this readme.
 
-It's actually a lot simpler in practice than the documentation makes it seem.
+The documentation might be intimidating, but it's actually a lot simpler in practice.
 
-## Commands
+## Commands/controls
 
-Type any string to filter through the list of links (described below); press enter to go to the link.
+Type any string in the omnibar to filter through the list of links (described below); press `enter` to go to the selected link.
 
-The up and down arrow keys can be used to switch between links from the filtered list.
+The `up` and `down` arrow keys can be used to select between links from the filtered list; by default, the first one is selected.
 
 Commands are prefixed with `:`.
 - `:set {link name} {link URL}` - Add or change a link with the given name
@@ -73,7 +77,7 @@ This configuration is automatically locally stored in your browser whenever you 
 
 If your configuration ever gets corrupted, use the `:resetconfig` command.
 
-### Links:
+### Configure Links:
 - `display_when_empty` - bool (default `true`; whether to show all links by default when the omnibar is empty)
 - `links` - a list of link objects (see below)
 
@@ -85,8 +89,10 @@ Link object format example:
     "priority": 0
 }
 ```
+*Note: as a best practice, use common sense for naming links, like don't start them with* `=` *or* `-` *and don't add extra spaces.*
+*Also, spaces should not be used in link hrefs.*
 
-### Events:
+### Configure Events:
 - `events` - a list of event objects (see below)
 - `event_display_duration_mins` - integer (default `60`; how many minutes before an event to display a countdown at the bottom)
 
@@ -101,7 +107,7 @@ Event object format example (creates an event Lunch Time at 12:25pm repeating ea
 ```
 *Note: hours are from 1 to 23; weekdays are 'Su', 'M', 'Tu', 'W', 'Th', 'F', and 'Sa'; if "rep" is not defined the event always repeats.*
 
-### Clock:
+### Configure Clock:
 - `clock1_name` - the name of the main clock (center), which shows local time (default `""` (empty string))
 - `clock2_name` - the name of the second clock (left) (default `"hidden"`)
 - `clock2_utc_offset` - the UTC offset of the second clock (ex. for Tokyo, which is UTC+9, use `+9`)
@@ -117,9 +123,12 @@ Make sure you've researched the right UTC offset for any cities you want to add!
 
 I find that adding a related emoji to clock titles helps improve the appearance of the page as a whole.
 
-### Full example file:
-Since setting up the configuration file could be complicated, find an example in this repository or,
-in the omnibar, simply `:export` it to get a copy of your current configuration.
+### Full example config files:
+
+Since setting up the configuration file could be complicated, you can find a full-featured
+example in this repository's `examples` folder, which you can load by running the `:import` command.
+
+Also remember that you can simply enter `:export` in the omnibar to get a copy of your current configuration.
 
 ## Filtering Method
 

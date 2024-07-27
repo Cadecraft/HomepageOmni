@@ -1,18 +1,15 @@
 // Homepage Omni
 // Cadecraft
-// v0.4.3; 2024/07/23
+// v0.5.2; 2024/07/25
 
 /* TODO:
-	Feat: max height and scroll bar for the list of links
 	Feat: allow changing your search engine
-	Feat: entire config file: schedules, clocks, search engine, links list, colors
-	Feat: sane, simple, minimal, defaults
-	Doc: better-document the config file syntax and available options
-	Doc: better screenshot
-	Doc: have an extra "cool example config" file in this repo
+	Feat: entire config file: search engine, colors (page bg, omnibar bg, link/flair color)
+	Doc: fully document the config file syntax and available options
 	Colors: change slightly? Allow customization?
 	Test: test the day of the week schedule thing
 	Test: clocks for different time zones
+	Test: actually add my schedule to events and watch throughout the day
 	Release: publish for Firefox?
 */
 
@@ -29,18 +26,12 @@ let config_default = {
 	"links": [
 		{ key: "Example Link", href: "https://example.com", priority: 0 },
 		{ key: "Google", href: "https://google.com", priority: 0 },
-		{ key: "Gmail", href: "https://mail.google.com", priority: 0 },
 		{ key: "GitHub", href: "https://github.com", priority: 0 },
 		{ key: "YouTube", href: "https://youtube.com/", priority: 0 },
-		{ key: "LeetCode", href: "https://leetcode.com/problemset", priority: 0 }
 	],
 	// Events: { name (display name), hr (1-23), min (0-59) }
 	"events": [
-		{ name: "10am", hr: 10, min: 0, rep: "SuMTuWThFSa" },
-		{ name: "10:30am", hr: 10, min: 30, rep: "SuMTuWThFSa" },
-		{ name: "10:49am", hr: 10, min: 49, rep: "SuMTuWThFSa" },
-		{ name: "11am", hr: 11, min: 0, },
-		{ name: "12pm", hr: 12, min: 0, rep: "SuMTuWThFSa" }
+
 	],
 	"event_display_duration_mins": 60,
 	// Clocks
@@ -261,7 +252,7 @@ function updateFiltered(new_value) {
 		helptext.innerText = error_text;
 	} else if (new_value.startsWith(":") && helptext.innerText == "") {
 		helptext.className = "normal";
-		helptext.innerText = "Enter a command (ex. :set)";
+		helptext.innerText = "Enter a command (ex. :set, :delete)";
 	} else if (new_value.startsWith("=")) {
 		helptext.className = "normal";
 		helptext.innerText = "Enter an address (ex. =example.com)";
@@ -333,7 +324,9 @@ function render() {
 	for (let i = 0; i < links_filtered.length; i++) {
 		// Render the link
 		const new_div = document.createElement("div");
-		if (i == selectedi) new_div.className = "linkitem_selected";
+		if (i == selectedi) {
+			new_div.className = "linkitem_selected";
+		}
 		else new_div.className = "linkitem_normal";
 		const new_a = document.createElement("a");
 		new_a.href = links_filtered[i].href;
@@ -341,6 +334,10 @@ function render() {
 		new_div.appendChild(new_a);
 		listbox.appendChild(new_div);
 		first_item = false;
+		if (i == selectedi) {
+			// Make sure it is visible
+			new_div.scrollIntoView();
+		}
 	}
 	// Update the clock
 	updateClock();

@@ -1,0 +1,32 @@
+{
+    "display_when_empty": true,
+    "links": [
+        {
+            "key": "Example Link",
+            "href": "https://example.com",
+            "priority": 0
+        },
+        {
+            "key": "GitHub",
+            "href": "https://github.com",
+            "priority": 0
+        },
+        {
+            "key": "Google",
+            "href": "https://google.com",
+            "priority": 0
+        },
+        {
+            "key": "YouTube",
+            "href": "https://youtube.com/",
+            "priority": 0
+        }
+    ],
+    "events": [],
+    "event_display_duration_mins": 60,
+    "clock1_name": "",
+    "clock2_name": "hidden",
+    "clock2_utc_offset": 0,
+    "clock3_name": "hidden",
+    "clock3_utc_offset": 0
+}

@@ -38,6 +38,8 @@ div.listbox {
 	display: inline-block;
 	text-align: left;
 	padding: 8px;
+	max-height: 240px;
+	overflow-y: auto;
 }
 input.omnibar {
 	height: 36px;
