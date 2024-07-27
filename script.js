@@ -5,7 +5,6 @@
 /* TODO:
 	Feat: allow changing your search engine
 	Feat: entire config file: search engine, colors (page bg, omnibar bg, link/flair color)
-	Feat: attempt to repair corrupted configs by filling in with the default
 	Fix: timing countdowns after midnight
 	Doc: fully document the config file syntax and available options
 	Colors: change slightly? Allow customization?
@@ -285,10 +284,9 @@ function exportFile() {
 function importFromString(theText) {
 	// Simply parse the config from a JSON
 	config = JSON.parse(theText);
-	// Fill in any missing fields with the defaults
-	// TODO: impl filling in missing fields
-	// TODO: Do not add if the URL or the key do not exist or are invalid
-	// TODO: Check if corrupted
+	// Fill in any missing fields with the defaults using the ES6 spread operator
+	config = { ...config_default, ...config };
+	// TODO: Do not add a link if the URL or the key do not exist or are invalid (corrupted)
 	// Update
 	sortLinks();
 	updateFiltered("");
@@ -420,6 +418,8 @@ async function loadConfig() {
 			) {
 				// Update to result
 				config = result["config"];
+				// Fill in any missing fields with the defaults using the ES6 spread operator
+				config = { ...config_default, ...config };
 				// Update
 				sortLinks();
 				updateFiltered("");
@@ -438,6 +438,8 @@ async function loadConfig() {
 		) {
 			// Update to result
 			config = result["config"];
+			// Fill in any missing fields with the defaults using the ES6 spread operator
+			config = { ...config_default, ...config };
 			// Update
 			sortLinks();
 			updateFiltered("");
