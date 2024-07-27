@@ -28,5 +28,6 @@
     "clock2_name": "hidden",
     "clock2_utc_offset": 0,
     "clock3_name": "hidden",
-    "clock3_utc_offset": 0
+    "clock3_utc_offset": 0,
+    "bar_placeholder": "Filter criteria, :command, =address, -search"
 }

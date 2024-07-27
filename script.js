@@ -5,6 +5,8 @@
 /* TODO:
 	Feat: allow changing your search engine
 	Feat: entire config file: search engine, colors (page bg, omnibar bg, link/flair color)
+	Feat: attempt to repair corrupted configs by filling in with the default
+	Fix: timing countdowns after midnight
 	Doc: fully document the config file syntax and available options
 	Colors: change slightly? Allow customization?
 	Test: test the day of the week schedule thing
@@ -41,7 +43,8 @@ let config_default = {
 	"clock2_name": "hidden",
 	"clock2_utc_offset": 0,
 	"clock3_name": "hidden",
-	"clock3_utc_offset": 0
+	"clock3_utc_offset": 0,
+	"bar_placeholder": "Filter criteria, :command, =address, -search"
 };
 // The actual config
 let config = structuredClone(config_default);
@@ -313,6 +316,7 @@ document.getElementById("file-uploader").addEventListener("change", () => {
 });
 
 // Render
+const omnibar = document.getElementById("omnibar");
 const listbox = document.getElementById("listbox");
 function render() {
 	// Clear the list
@@ -341,10 +345,11 @@ function render() {
 	}
 	// Update the clock
 	updateClock();
+	// Update the placeholder
+	omnibar.placeholder = config.bar_placeholder;
 }
 
 // On updating
-const omnibar = document.getElementById("omnibar");
 omnibar.addEventListener("change", () => {
 	let new_value = omnibar.value;
 	updateFiltered(new_value);

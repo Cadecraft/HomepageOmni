@@ -77,8 +77,9 @@ This configuration is automatically locally stored in your browser whenever you 
 
 If your configuration ever gets corrupted, use the `:resetconfig` command.
 
-### Configure Links:
+### Configure Links and bar:
 - `display_when_empty` - bool (default `true`; whether to show all links by default when the omnibar is empty)
+- `bar_placeholder` - the placeholder text that appears in the omnibar
 - `links` - a list of link objects (see below)
 
 Link object format example:
