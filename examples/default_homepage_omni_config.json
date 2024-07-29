@@ -29,5 +29,12 @@
     "clock2_utc_offset": 0,
     "clock3_name": "hidden",
     "clock3_utc_offset": 0,
-    "bar_placeholder": "Filter criteria, :command, =address, -search"
+    "bar_placeholder": "Filter criteria, :command, =address, -search",
+    "theme": {
+        "--mainbg": "#2b2a33",
+        "--lightbg": "#42414d",
+        "--midbg": "#353440",
+        "--blue": "#5aa5c2",
+        "--bluedark": "#498cad"
+    }
 }

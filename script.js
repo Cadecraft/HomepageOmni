@@ -1,16 +1,17 @@
 // Homepage Omni
 // Cadecraft
-// v0.5.2; 2024/07/25
+// v0.5.3; 2024/07/29
 
 /* TODO:
 	Feat: allow changing your search engine
-	Feat: entire config file: search engine, colors (page bg, omnibar bg, link/flair color)
 	Fix: timing countdowns after midnight
-	Doc: fully document the config file syntax and available options
+	Fix: potential security vulnerability in theme injection
+	Doc: fully document the config file syntax and available options (including theme)
 	Colors: change slightly? Allow customization?
 	Test: test the day of the week schedule thing
 	Test: clocks for different time zones
 	Test: actually add my schedule to events and watch throughout the day
+	Test: test theme more
 	Release: publish for Firefox?
 */
 
@@ -43,7 +44,14 @@ let config_default = {
 	"clock2_utc_offset": 0,
 	"clock3_name": "hidden",
 	"clock3_utc_offset": 0,
-	"bar_placeholder": "Filter criteria, :command, =address, -search"
+	"bar_placeholder": "Filter criteria, :command, =address, -search",
+	"theme": {
+		"--mainbg": "#2b2a33",
+		"--lightbg": "#42414d",
+		"--midbg": "#353440",
+		"--blue": "#5aa5c2",
+		"--bluedark": "#498cad"
+	}
 };
 // The actual config
 let config = structuredClone(config_default);
@@ -292,6 +300,7 @@ function importFromString(theText) {
 	updateFiltered("");
 	render();
 	updateClock();
+	updateTheme();
 	// Save the links to storage after loading them (assuming no errors)
 	// TODO: display result/error if needed?
 	saveConfig();
@@ -345,6 +354,18 @@ function render() {
 	updateClock();
 	// Update the placeholder
 	omnibar.placeholder = config.bar_placeholder;
+}
+
+function updateTheme() {
+	// Update the theme color variables in the html's css to align with the config's theme
+	// TODO: ensure this isn't a security vulnerability?
+	for (const [key, val] of Object.entries(config.theme)) {
+		if (!key.startsWith("--")) {
+			// Only allow CSS variables
+			continue;
+		}
+		document.documentElement.style.setProperty(key, val);
+	}
 }
 
 // On updating
@@ -425,6 +446,7 @@ async function loadConfig() {
 				updateFiltered("");
 				render();
 				updateClock();
+				updateTheme();
 			}
 		});
 	} else {
@@ -445,6 +467,7 @@ async function loadConfig() {
 			updateFiltered("");
 			render();
 			updateClock();
+			updateTheme();
 		}
 	}
 }

@@ -77,6 +77,8 @@ This configuration is automatically locally stored in your browser whenever you 
 
 If your configuration ever gets corrupted, use the `:resetconfig` command.
 
+If you want to load a configuration you found from someone else, please read it and ensure it is trustworthy.
+
 ### Configure Links and bar:
 - `display_when_empty` - bool (default `true`; whether to show all links by default when the omnibar is empty)
 - `bar_placeholder` - the placeholder text that appears in the omnibar
@@ -123,6 +125,20 @@ If you choose to use multiple clocks, it is recommended to set Clock 1's name to
 Make sure you've researched the right UTC offset for any cities you want to add!
 
 I find that adding a related emoji to clock titles helps improve the appearance of the page as a whole.
+
+### Configure Theme:
+- `theme` - an object/dictionary of variable settings
+
+All theme variables (shown with their defaults) (any valid CSS color can be used):
+```json
+{
+    "--mainbg": "#2b2a33",
+    "--lightbg": "#42414d",
+    "--midbg": "#353440",
+    "--blue": "#5aa5c2",
+    "--bluedark": "#498cad"
+}
+```
 
 ### Full example config files:
 

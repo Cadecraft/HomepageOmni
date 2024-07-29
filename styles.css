@@ -1,11 +1,17 @@
 /* Page setup */
 html {
 	height: 100%;
+	/* Default theme */
+	--mainbg: #2b2a33;
+	--lightbg: #42414d;
+	--midbg: #353440;
+	--blue: #5aa5c2;
+	--bluedark: #498cad;
 }
 body {
 	margin: 0px;
 	padding: 0px;
-	background-color: #2b2a33;
+	background-color: var(--mainbg);
 	color: white;
 	text-align: center;
 	height: 100%;
@@ -29,7 +35,7 @@ div.container_inner {
 /* Misc */
 div.listbox {
 	width: 450px;
-	background-color: #353440;
+	background-color: var(--midbg);
 	color: #d0cfe6;
 	font-size: 14px;
 	border: none;
@@ -44,7 +50,7 @@ div.listbox {
 input.omnibar {
 	height: 36px;
 	width: 450px;
-	background-color: #42414d;
+	background-color: var(--lightbg);
 	color: #d0cfe6;
 	font-size: 14px;
 	border: none;
@@ -56,13 +62,13 @@ input.omnibar {
 }
 input.omnibar:focus {
 	border: none;
-	outline: solid 2px #5aa5c2;
+	outline: solid 2px var(--blue);
 }
 div.linkitem_normal {
 	background-color: transparent;
 }
 div.linkitem_selected {
-	background-color: #42414d;
+	background-color: var(--lightbg);
 }
 div.clockcontainer {
 	display: flex;
@@ -73,7 +79,7 @@ div.clockitem {
 	height: 50px;
 }
 a, a:visited {
-	color: #5aa5c2;
+	color: var(--blue);
 	text-decoration: none;
 	outline: none;
 }
@@ -82,8 +88,7 @@ a:hover {
 	text-decoration: underline;
 }
 a:active, a:focus {
-	color: #498cad;
-	outline: solid 1px #5aa5c2;
+	color: var(--bluedark);
 	border-radius: 2px;
 }
 span {
@@ -105,7 +110,7 @@ span.date {
 	color: #85849c;
 }
 span.event {
-	color: #5aa5c2;
+	color: var(--blue);
 	text-decoration: none;
 	outline: none;
 }

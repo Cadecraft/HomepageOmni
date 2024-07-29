@@ -72,5 +72,12 @@
     "clock2_utc_offset": 0,
     "clock3_name": "🗼Tokyo",
     "clock3_utc_offset": 9,
-    "bar_placeholder": "Welcome home"
+    "bar_placeholder": "Welcome home",
+    "theme": {
+        "--mainbg": "#15161e",
+        "--lightbg": "#262736",
+        "--midbg": "#1a1b26",
+        "--blue": "#81a5e2",
+        "--bluedark": "#50679b"
+    }
 }
