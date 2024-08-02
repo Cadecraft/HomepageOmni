@@ -10,5 +10,10 @@
 	"permissions": [
 		"webNavigation",
 		"storage"
-	]
+	],
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "homepageomni@homepageomni.homepageomni"
+		}
+	}
 }
