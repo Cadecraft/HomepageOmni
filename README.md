@@ -4,13 +4,13 @@ A custom, lightweight homepage/new tab browser extension that lets
 you create and access quick links via an omnibar
 
 - Productive: keyboard-based mouse-free interaction, available at any new tab page
-- Customizable: add any links, create events, etc. through a portable config file
+- Customizable: add any links, create events, change colors, etc. through a portable config file
 - Simple: no complicated graphics or bulky UI elements
 - Private: nothing you type in the bar is recorded until you hit enter
 
-![A screenshot of HomepageOmni](screenshot.jpg "A screenshot of Homepage Omni")
+*A configured screenshot showcasing many features, using* `examples/feature_showcase_config.json`
 
-*This screenshot uses the* `examples/feature_showcase_config.json` *configuration*
+![A screenshot of HomepageOmni](screenshot.jpg "A screenshot of Homepage Omni")
 
 ## Installation
 
@@ -129,7 +129,7 @@ I find that adding a related emoji to clock titles helps improve the appearance 
 ### Configure Theme:
 - `theme` - an object/dictionary of variable settings
 
-All theme variables (shown with their defaults) (any valid CSS color can be used):
+All theme variables (shown with their defaults; any valid CSS color can be used as a value):
 ```json
 {
     "--mainbg": "#2b2a33",

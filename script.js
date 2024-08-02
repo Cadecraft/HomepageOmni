@@ -1,18 +1,13 @@
 // Homepage Omni
 // Cadecraft
-// v0.5.3; 2024/07/29
+// v0.5.4; 2024/08/02
 
 /* TODO:
 	Feat: allow changing your search engine
 	Fix: timing countdowns after midnight
-	Fix: potential security vulnerability in theme injection
-	Doc: fully document the config file syntax and available options (including theme)
 	Colors: change slightly? Allow customization?
-	Test: test the day of the week schedule thing
 	Test: clocks for different time zones
-	Test: actually add my schedule to events and watch throughout the day
-	Test: test theme more
-	Release: publish for Firefox?
+	Release: publish for Firefox
 */
 
 // Data
@@ -358,7 +353,6 @@ function render() {
 
 function updateTheme() {
 	// Update the theme color variables in the html's css to align with the config's theme
-	// TODO: ensure this isn't a security vulnerability?
 	for (const [key, val] of Object.entries(config.theme)) {
 		if (!key.startsWith("--")) {
 			// Only allow CSS variables
