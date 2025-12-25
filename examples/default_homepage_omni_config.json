@@ -3,23 +3,19 @@
     "links": [
         {
             "key": "Example Link",
-            "href": "https://example.com",
-            "priority": 0
+            "href": "https://example.com"
         },
         {
             "key": "GitHub",
-            "href": "https://github.com",
-            "priority": 0
+            "href": "https://github.com"
         },
         {
             "key": "Google",
-            "href": "https://google.com",
-            "priority": 0
+            "href": "https://google.com"
         },
         {
             "key": "YouTube",
-            "href": "https://youtube.com/",
-            "priority": 0
+            "href": "https://youtube.com/"
         }
     ],
     "events": [],
@@ -31,10 +27,10 @@
     "clock3_utc_offset": 0,
     "bar_placeholder": "Filter criteria, :command, =address, -search",
     "theme": {
-        "--mainbg": "#2b2a33",
-        "--lightbg": "#42414d",
-        "--midbg": "#353440",
-        "--blue": "#5aa5c2",
-        "--bluedark": "#498cad"
+        "mainbg": "#2b2a33",
+        "lightbg": "#42414d",
+        "midbg": "#353440",
+        "blue": "#5aa5c2",
+        "bluedark": "#498cad"
     }
 }

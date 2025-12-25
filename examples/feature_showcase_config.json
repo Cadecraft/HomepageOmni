@@ -3,38 +3,31 @@
     "links": [
         {
             "key": "GitHub 💻",
-            "href": "https://github.com",
-            "priority": 0
+            "href": "https://github.com"
         },
         {
             "key": "Gmail 📧",
-            "href": "https://mail.google.com",
-            "priority": 0
+            "href": "https://mail.google.com"
         },
         {
             "key": "Google 🔍",
-            "href": "https://google.com",
-            "priority": 0
+            "href": "https://google.com"
         },
         {
             "key": "LeetCode ❓",
-            "href": "https://leetcode.com",
-            "priority": 0
+            "href": "https://leetcode.com"
         },
         {
             "key": "YouTube ▶️",
-            "href": "https://youtube.com/",
-            "priority": 0
+            "href": "https://youtube.com/"
         },
         {
             "key": "MDN Web Docs 📄",
-            "href": "https://developer.mozilla.org/en-US/",
-            "priority": 0
+            "href": "https://developer.mozilla.org/en-US/"
         },
         {
             "key": "Weather Underground 🌧",
-            "href": "https://www.wunderground.com/",
-            "priority": 0
+            "href": "https://www.wunderground.com/"
         }
     ],
     "events": [
@@ -74,10 +67,10 @@
     "clock3_utc_offset": 9,
     "bar_placeholder": "Welcome home",
     "theme": {
-        "--mainbg": "#15161e",
-        "--lightbg": "#262736",
-        "--midbg": "#1a1b26",
-        "--blue": "#81a5e2",
-        "--bluedark": "#50679b"
+        "mainbg": "#15161e",
+        "lightbg": "#262736",
+        "midbg": "#1a1b26",
+        "blue": "#81a5e2",
+        "bluedark": "#50679b"
     }
 }

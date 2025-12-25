@@ -88,8 +88,7 @@ Link object format example:
 ```json
 {
     "key": "Example Link",
-    "href": "https://example.com",
-    "priority": 0
+    "href": "https://example.com"
 }
 ```
 *Note: as a best practice, use common sense for naming links, like don't start them with* `=` *or* `-` *and don't add extra spaces.*
@@ -132,11 +131,11 @@ I find that adding a related emoji to clock titles helps improve the appearance 
 All theme variables (shown with their defaults; any valid CSS color can be used as a value):
 ```json
 {
-    "--mainbg": "#2b2a33",
-    "--lightbg": "#42414d",
-    "--midbg": "#353440",
-    "--blue": "#5aa5c2",
-    "--bluedark": "#498cad"
+    "mainbg": "#2b2a33",
+    "lightbg": "#42414d",
+    "midbg": "#353440",
+    "blue": "#5aa5c2",
+    "bluedark": "#498cad"
 }
 ```
 

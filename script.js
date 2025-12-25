@@ -21,7 +21,6 @@ let selectedi = 0; // The current index selected from links_filtered
 let display_when_empty = true; // Whether to display when the box is empty
 let error_text = "";
 // The default config
-// TODO: set some sane, simple, minimal defaults
 const CONFIG_DEFAULT = {
 	"display_when_empty": true,
 	// Links: { key (display name), href (URL to go to) }
@@ -32,13 +31,9 @@ const CONFIG_DEFAULT = {
 		{ key: "YouTube", href: "https://youtube.com/" },
 	],
 	// Events: { name (display name), hr (1-23), min (0-59) }
-	"events": [
-
-	],
+	"events": [],
 	"event_display_duration_mins": 60,
-	// Clocks
-	// TODO: document these in README (value of "none" = do not show the clock)
-	// TODO: by default, only show clock 1
+	// Clocks (by default, only show clock 1)
 	"clock1_name": "",
 	"clock2_name": "hidden",
 	"clock2_utc_offset": 0,
