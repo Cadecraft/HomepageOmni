@@ -66,6 +66,7 @@
     "clock3_name": "🗼Tokyo",
     "clock3_utc_offset": 9,
     "bar_placeholder": "Welcome home",
+	"search_url_prefix": "https://duckduckgo.com/",
     "theme": {
         "mainbg": "#15161e",
         "lightbg": "#262736",

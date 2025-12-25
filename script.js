@@ -10,7 +10,6 @@
 	Release: publish for Firefox
 
 	Feat: scripting features
-	Feat: choose your search engine in config
 	Docs: update documentation to match
 	Docs: update example configs to match
 */
@@ -40,6 +39,8 @@ const CONFIG_DEFAULT = {
 	"clock3_name": "hidden",
 	"clock3_utc_offset": 0,
 	"bar_placeholder": "Filter criteria, :command, =address, -search",
+	// Search URL prefix (e.g. "https://duckduckgo.com/")
+	"search_url_prefix": "https://google.com/search",
 	"theme": {
 		"mainbg": "#2b2a33",
 		"lightbg": "#42414d",
@@ -165,7 +166,7 @@ function processInput(new_value) {
 		else window.location.href = "https://" + new_value.substring(1).trim();
 	} else if (new_value.startsWith("-")) {
 		// Web search
-		window.location.href = "https://google.com/search?q=" + new_value.substring(1).trim();
+		window.location.href = `${config.search_url_prefix}?q=${new_value.substring(1).trim()}`;
 	} else {
 		// Link: choose the selected one of the filtered
 		if (links_filtered.length == 0) {

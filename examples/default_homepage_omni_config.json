@@ -26,6 +26,7 @@
     "clock3_name": "hidden",
     "clock3_utc_offset": 0,
     "bar_placeholder": "Filter criteria, :command, =address, -search",
+	"search_url_prefix": "https://google.com/search",
     "theme": {
         "mainbg": "#2b2a33",
         "lightbg": "#42414d",

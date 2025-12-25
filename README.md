@@ -125,6 +125,9 @@ Make sure you've researched the right UTC offset for any cities you want to add!
 
 I find that adding a related emoji to clock titles helps improve the appearance of the page as a whole.
 
+### Configure Search:
+- `search_url_prefix` - the search engine URL you want to use (the part that comes before `?q=`) (default `"https://google.com/search"`)
+
 ### Configure Theme:
 - `theme` - an object/dictionary of variable settings
 
