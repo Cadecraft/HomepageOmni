@@ -9,10 +9,10 @@
 	Test: clocks for different time zones
 	Release: publish for Firefox
 
-	Feat: no longer require 'priority' in link config (incl. in default)
 	Feat: scripting features
-	Feat: theme css variables no longer should need prefix --; these will get added
 	Feat: choose your search engine in config
+	Docs: update documentation to match
+	Docs: update example configs to match
 */
 
 // Data
@@ -24,12 +24,12 @@ let error_text = "";
 // TODO: set some sane, simple, minimal defaults
 const CONFIG_DEFAULT = {
 	"display_when_empty": true,
-	// Links: { key (display name), href (URL to go to), priority (should be 0) }
+	// Links: { key (display name), href (URL to go to) }
 	"links": [
-		{ key: "Example Link", href: "https://example.com", priority: 0 },
-		{ key: "Google", href: "https://google.com", priority: 0 },
-		{ key: "GitHub", href: "https://github.com", priority: 0 },
-		{ key: "YouTube", href: "https://youtube.com/", priority: 0 },
+		{ key: "Example Link", href: "https://example.com" },
+		{ key: "Google", href: "https://google.com" },
+		{ key: "GitHub", href: "https://github.com" },
+		{ key: "YouTube", href: "https://youtube.com/" },
 	],
 	// Events: { name (display name), hr (1-23), min (0-59) }
 	"events": [
@@ -46,11 +46,11 @@ const CONFIG_DEFAULT = {
 	"clock3_utc_offset": 0,
 	"bar_placeholder": "Filter criteria, :command, =address, -search",
 	"theme": {
-		"--mainbg": "#2b2a33",
-		"--lightbg": "#42414d",
-		"--midbg": "#353440",
-		"--blue": "#5aa5c2",
-		"--bluedark": "#498cad"
+		"mainbg": "#2b2a33",
+		"lightbg": "#42414d",
+		"midbg": "#353440",
+		"blue": "#5aa5c2",
+		"bluedark": "#498cad"
 	}
 };
 // The actual config
@@ -189,10 +189,9 @@ function processInput(new_value) {
 
 // Compare two links
 function compareLinks(a, b) {
-	// First, priority
-	if (a.priority > b.priority) return -1;
-	else if (a.priority < b.priority) return 1;
-	// Second, key
+	if (a?.priority > b?.priority) return -1;
+	else if (a?.priority < b?.priority) return 1;
+
 	if (a.key < b.key) return -1;
 	else if (a.key > b.key) return 1;
 	else return 0;
@@ -216,7 +215,7 @@ function updateFiltered(new_value) {
 	if (trimmed == "") {
 		// Empty: show or hide, based on the setting
 		if (config.display_when_empty) {
-			links_filtered = config.links.slice();
+			links_filtered = config.links.map(link => ({ ...link, priority: 0 }));
 		} else {
 			links_filtered = [];
 		}
@@ -244,7 +243,7 @@ function updateFiltered(new_value) {
 			// TODO: ignore all spaces for easier search?
 			const matchesFilter = link.key.toLowerCase().includes(filterTo);
 			if (matchesFilter) {
-				links_filtered.push(structuredClone(link));
+				links_filtered.push({ ...link, priority: 0 });
 				if (link.key.toLowerCase().startsWith(filterTo)) {
 					// First priority: starts with
 					links_filtered[links_filtered.length - 1].priority = 1;
@@ -356,11 +355,7 @@ function render() {
 function updateTheme() {
 	// Update the theme color variables in the html's css to align with the config's theme
 	for (const [key, val] of Object.entries(config.theme)) {
-		if (!key.startsWith("--")) {
-			// Only allow CSS variables
-			continue;
-		}
-		document.documentElement.style.setProperty(key, val);
+		document.documentElement.style.setProperty(`--${key}`, val);
 	}
 }
 
