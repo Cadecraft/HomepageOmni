@@ -9,7 +9,9 @@
 	Test: clocks for different time zones
 	Release: publish for Firefox
 
-	Feat: scripting features
+	Perf: more efficient filtering? (i.e. typing should be faster)
+	Feat: templates
+	Fix: only allow hex colors for style (regex)
 	Docs: update documentation to match
 	Docs: update example configs to match
 */
@@ -29,7 +31,7 @@ const CONFIG_DEFAULT = {
 		{ key: "GitHub", href: "https://github.com" },
 		{ key: "YouTube", href: "https://youtube.com/" },
 	],
-	// Events: { name (display name), hr (1-23), min (0-59) }
+	// Events: { name (display name), hr (1..=23), min (0..=59) }
 	"events": [],
 	"event_display_duration_mins": 60,
 	// Clocks (by default, only show clock 1)
@@ -38,7 +40,7 @@ const CONFIG_DEFAULT = {
 	"clock2_utc_offset": 0,
 	"clock3_name": "hidden",
 	"clock3_utc_offset": 0,
-	"bar_placeholder": "Filter criteria, :command, =address, -search",
+	"bar_placeholder": "Filter criteria, :command, =address, -search, +custom",
 	// Search URL prefix (e.g. "https://duckduckgo.com/")
 	"search_url_prefix": "https://google.com/search",
 	"theme": {
@@ -47,7 +49,9 @@ const CONFIG_DEFAULT = {
 		"midbg": "#353440",
 		"blue": "#5aa5c2",
 		"bluedark": "#498cad"
-	}
+	},
+	// Templates: id maps to template string
+	"templates": {}
 };
 // The actual config
 let config = structuredClone(CONFIG_DEFAULT);
@@ -58,11 +62,12 @@ const is_chrome = navigator.userAgent.includes("Chrome");
 
 // Set a key and return whether successful
 function setLink(new_key, new_href) {
+	const disallowed = [":", "=", "-", "+"];
 	if (new_key.trim().length == 0) {
 		error_text = "Name must not be empty";
 		return false;
-	} else if (new_key.trim().startsWith(":") || new_key.trim().startsWith("=") || new_key.trim().startsWith("-")) {
-		error_text = "Name cannot start with ':', '=', or '-'";
+	} else if (disallowed.some(d => new_key.trim().startsWith(d))) {
+		error_text = `Name cannot start with these characters: ${disallowed.reduce((a, b) => a + b)}`;
 		return false;
 	} else if (new_href.includes(",")) {
 		error_text = "URL cannot contain commas";
@@ -117,6 +122,34 @@ function parseSetArguments(arguments_string) {
 	return { key_value, href_value };
 }
 
+function populateTemplate(templateString, args) {
+	let res = "";
+	// Regex matches "{0}".
+	// No need to worry about escaping literal { and } as they are not used in URLs (would be encoded)
+	let regex = /{\d+}/;
+	while (templateString.search(regex) != -1) {
+		const currIndex = templateString.search(regex);
+		let argNum = 0;
+		let i = currIndex + 1;
+		while (templateString[i] >= '0' && templateString[i] <= '9') {
+			argNum *= 10;
+			argNum += templateString.charCodeAt(i) - '0'.charCodeAt(0);
+			i += 1;
+		}
+		// Build next part of string
+		res += templateString.substring(0, currIndex);
+		if (argNum >= args.length || argNum < 0) {
+			error_text = `Argument #${argNum} is required but not provided`;
+			return false;
+		}
+		res += args[argNum];
+		templateString = templateString.substring(i + 1);
+	}
+	res += templateString;
+
+	return res;
+}
+
 // Process entered input and return whether successful
 function processInput(new_value) {
 	// Determine type by first character
@@ -167,6 +200,22 @@ function processInput(new_value) {
 	} else if (new_value.startsWith("-")) {
 		// Web search
 		window.location.href = `${config.search_url_prefix}?q=${new_value.substring(1).trim()}`;
+	} else if (new_value.startsWith("+")) {
+		// Custom template
+		const parsed = new_value.substring(1).trim().split(" ");
+		const template = config.templates[parsed[0]];
+		if (!template) {
+			error_text = "Not a template id";
+			return false;
+		}
+
+		const res = populateTemplate(template, parsed.slice(1));
+		if (typeof res === 'string') {
+			location.href = res;
+			return true;
+		} else {
+			return false;
+		}
 	} else {
 		// Link: choose the selected one of the filtered
 		if (links_filtered.length == 0) {
@@ -261,6 +310,9 @@ function updateFiltered(new_value) {
 	} else if (new_value.startsWith("-")) {
 		helptext.className = "normal";
 		helptext.innerText = "Enter a web search (ex. -marsupials)";
+	} else if (new_value.startsWith("+")) {
+		helptext.className = "normal";
+		helptext.innerText = "Enter your custom command (ex. +mycommand arg1 arg2)";
 	}
 	// Handle selection
 	if (selectedi >= links_filtered.length) selectedi = links_filtered.length - 1;
@@ -342,8 +394,6 @@ function render() {
 			new_div.scrollIntoView();
 		}
 	}
-	// Update the clock
-	updateClock();
 	// Update the placeholder
 	omnibar.placeholder = config.bar_placeholder;
 }

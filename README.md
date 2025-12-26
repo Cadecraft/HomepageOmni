@@ -55,7 +55,7 @@ Commands are prefixed with `:`.
 - `:show` - Show all links by default (when the omnibar is empty)
 - `:hide` - Hide all links by default
 - `:export` - Export/save the configuration to a .json file
-- `:import` - Import/load the configuration from a .json file; be careful and only import files you trust
+- `:import` - Import/load the configuration from a .json file
 - `:resetconfig` - Reset the entire configuration (useful if corrupted)
 
 <!-- TODO: version command -->
@@ -65,6 +65,9 @@ Addresses are prefixed with `=`.
 
 Web searches are prefixed with `-`.
 - `-marsupials` - Google search for "marsupials"
+
+Templates (see below) are prefixed with `+`.
+- `+mytemplate 1` - If you configured it, this will open a specified URL with the argument 1
 
 ## Configuration file
 
@@ -131,7 +134,7 @@ I find that adding a related emoji to clock titles helps improve the appearance 
 ### Configure Theme:
 - `theme` - an object/dictionary of variable settings
 
-All theme variables (shown with their defaults; any valid CSS color can be used as a value):
+All theme variables (shown with their defaults; only valid hex colors may used as a value):
 ```json
 {
     "mainbg": "#2b2a33",
@@ -139,6 +142,21 @@ All theme variables (shown with their defaults; any valid CSS color can be used 
     "midbg": "#353440",
     "blue": "#5aa5c2",
     "bluedark": "#498cad"
+}
+```
+
+### Configure Templates:
+If you find that existing functionality is not enough for you, you can configure custom searchbar templates that take in arguments to construct a URL.
+
+When the user enters the template id using the `+` syntax, it opens the specified URL, with the template fields filled in with the given arguments.
+
+- `templates` - an object mapping template IDs to the templated URL strings
+    - Template URL strings use `{ARGNUMBER}` to specify the 0-indexed argument number. If you need to encode literal curly brackets, use `%7B` and `%7D`.
+
+Example: consider a link with a varying number in it. To jump to that link quickly, you can define a custom command such that when you enter `+eg 20 5`, you are taken to `https://example.com/something?page=20&count=5`.
+```json
+"templates": {
+    "eg": "https://example.com/something?page={0}&count={1}"
 }
 ```
 
