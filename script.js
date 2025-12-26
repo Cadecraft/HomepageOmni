@@ -400,8 +400,14 @@ function render() {
 
 function updateTheme() {
 	// Update the theme color variables in the html's css to align with the config's theme
+	const VALID_THEME_KEYS = ["mainbg", "lightbg", "midbg", "blue", "bluedark"];
+
+	const valid_hex = /#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})/;
 	for (const [key, val] of Object.entries(config.theme)) {
-		document.documentElement.style.setProperty(`--${key}`, val);
+		const allowed = VALID_THEME_KEYS.includes(key) && valid_hex.test(val);
+		if (allowed) {
+			document.documentElement.style.setProperty(`--${key}`, val);
+		}
 	}
 }
 
