@@ -16,7 +16,10 @@ you create and access quick links via an omnibar
 
 This extension works in both Firefox and Chrome, but is mostly tested in Firefox as my personal homepage.
 
-To test out the extension on Firefox:
+To add the extension to Firefox:
+1. Go to the [GitHub releases](https://github.com/Cadecraft/HomepageOmni/releases) in Firefox and click on the `.xpi` file to install the latest version
+
+To test out the extension on Firefox (e.g. for development):
 1. Download this source code
 2. In Firefox, go to `about:debugging`
 3. Go to the This Firefox section and click `Load Temporary Add-on...`
@@ -55,7 +58,7 @@ Commands are prefixed with `:`.
 - `:show` - Show all links by default (when the omnibar is empty)
 - `:hide` - Hide all links by default
 - `:export` - Export/save the configuration to a .json file
-- `:import` - Import/load the configuration from a .json file; be careful and only import files you trust
+- `:import` - Import/load the configuration from a .json file
 - `:resetconfig` - Reset the entire configuration (useful if corrupted)
 
 <!-- TODO: version command -->
@@ -65,6 +68,9 @@ Addresses are prefixed with `=`.
 
 Web searches are prefixed with `-`.
 - `-marsupials` - Google search for "marsupials"
+
+Templates (see below) are prefixed with `+`.
+- `+mytemplate 1` - If you configured it, this will open a specified URL with the argument 1
 
 ## Configuration file
 
@@ -88,8 +94,7 @@ Link object format example:
 ```json
 {
     "key": "Example Link",
-    "href": "https://example.com",
-    "priority": 0
+    "href": "https://example.com"
 }
 ```
 *Note: as a best practice, use common sense for naming links, like don't start them with* `=` *or* `-` *and don't add extra spaces.*
@@ -126,17 +131,35 @@ Make sure you've researched the right UTC offset for any cities you want to add!
 
 I find that adding a related emoji to clock titles helps improve the appearance of the page as a whole.
 
+### Configure Search:
+- `search_url_prefix` - the search engine URL you want to use (the part that comes before `?q=`) (default `"https://google.com/search"`)
+
 ### Configure Theme:
 - `theme` - an object/dictionary of variable settings
 
-All theme variables (shown with their defaults; any valid CSS color can be used as a value):
+All theme variables (shown with their defaults; only valid hex colors may used as a value):
 ```json
 {
-    "--mainbg": "#2b2a33",
-    "--lightbg": "#42414d",
-    "--midbg": "#353440",
-    "--blue": "#5aa5c2",
-    "--bluedark": "#498cad"
+    "mainbg": "#2b2a33",
+    "lightbg": "#42414d",
+    "midbg": "#353440",
+    "blue": "#5aa5c2",
+    "bluedark": "#498cad"
+}
+```
+
+### Configure Templates:
+If you find that existing functionality is not enough for you, you can configure custom searchbar templates that take in arguments to construct a URL.
+
+When the user enters the template id using the `+` syntax, it opens the specified URL, with the template fields filled in with the given arguments.
+
+- `templates` - an object mapping template IDs to the templated URL strings
+    - Template URL strings use `{ARGNUMBER}` to specify the 0-indexed argument number. If you need to encode literal curly brackets, use `%7B` and `%7D`.
+
+Example: consider a link with a varying number in it. To jump to that link quickly, you can define a custom command such that when you enter `+eg 20 5`, you are taken to `https://example.com/something?page=20&count=5`.
+```json
+"templates": {
+    "eg": "https://example.com/something?page={0}&count={1}"
 }
 ```
 

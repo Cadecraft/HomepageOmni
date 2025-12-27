@@ -1,6 +1,6 @@
 // Homepage Omni
 // Cadecraft
-// v0.5.4; 2024/08/02
+// v1.0.0; 2025/12/25
 
 /* TODO:
 	Feat: allow changing your search engine
@@ -8,6 +8,9 @@
 	Colors: change slightly? Allow customization?
 	Test: clocks for different time zones
 	Release: publish for Firefox
+
+	Docs: update documentation to match
+	Docs: update example configs to match
 */
 
 // Data
@@ -16,73 +19,68 @@ let selectedi = 0; // The current index selected from links_filtered
 let display_when_empty = true; // Whether to display when the box is empty
 let error_text = "";
 // The default config
-// TODO: set some sane, simple, minimal defaults
-let config_default = {
+const CONFIG_DEFAULT = {
 	"display_when_empty": true,
-	// Links: { key (display name), href (URL to go to), priority (should be 0) }
+	// Links: { key (display name), href (URL to go to) }
 	"links": [
-		{ key: "Example Link", href: "https://example.com", priority: 0 },
-		{ key: "Google", href: "https://google.com", priority: 0 },
-		{ key: "GitHub", href: "https://github.com", priority: 0 },
-		{ key: "YouTube", href: "https://youtube.com/", priority: 0 },
+		{ key: "Example Link", href: "https://example.com" },
+		{ key: "Google", href: "https://google.com" },
+		{ key: "GitHub", href: "https://github.com" },
+		{ key: "YouTube", href: "https://youtube.com/" },
 	],
-	// Events: { name (display name), hr (1-23), min (0-59) }
-	"events": [
-
-	],
+	// Events: { name (display name), hr (1..=23), min (0..=59) }
+	"events": [],
 	"event_display_duration_mins": 60,
-	// Clocks
-	// TODO: document these in README (value of "none" = do not show the clock)
-	// TODO: by default, only show clock 1
+	// Clocks (by default, only show clock 1)
 	"clock1_name": "",
 	"clock2_name": "hidden",
 	"clock2_utc_offset": 0,
 	"clock3_name": "hidden",
 	"clock3_utc_offset": 0,
-	"bar_placeholder": "Filter criteria, :command, =address, -search",
+	"bar_placeholder": "Filter criteria, :command, =address, -search, +custom",
+	// Search URL prefix (e.g. "https://duckduckgo.com/")
+	"search_url_prefix": "https://google.com/search",
 	"theme": {
-		"--mainbg": "#2b2a33",
-		"--lightbg": "#42414d",
-		"--midbg": "#353440",
-		"--blue": "#5aa5c2",
-		"--bluedark": "#498cad"
-	}
+		"mainbg": "#2b2a33",
+		"lightbg": "#42414d",
+		"midbg": "#353440",
+		"blue": "#5aa5c2",
+		"bluedark": "#498cad"
+	},
+	// Templates: id maps to template string
+	"templates": {}
 };
 // The actual config
-let config = structuredClone(config_default);
+let config = structuredClone(CONFIG_DEFAULT);
 
 // Determine browser type
 // TODO: better way of determining browser type?
-let is_chrome = navigator.userAgent.includes("Chrome");
+const is_chrome = navigator.userAgent.includes("Chrome");
 
 // Set a key and return whether successful
 function setLink(new_key, new_href) {
-	let foundIndex = -1;
-	for (let i = 0; i < config.links.length; i++) {
-		if (config.links[i].key.toLowerCase().trim() == new_key.toLowerCase().trim()) {
-			foundIndex = i;
-		}
+	const disallowed = [":", "=", "-", "+"];
+	if (new_key.trim().length == 0) {
+		error_text = "Name must not be empty";
+		return false;
+	} else if (disallowed.some(d => new_key.trim().startsWith(d))) {
+		error_text = `Name cannot start with these characters: ${disallowed.reduce((a, b) => a + b)}`;
+		return false;
+	} else if (new_href.includes(",")) {
+		error_text = "URL cannot contain commas";
+		return false;
 	}
+
+	const foundIndex = config.links.findIndex((l) => (
+		l.key.toLowerCase().trim() === new_key.toLowerCase().trim()
+	));
+
 	if (foundIndex == -1) {
-		// Add, if possible
-		if (new_key.trim().length == 0) {
-			error_text = "Name must not be empty";
-			return false;
-		} else if (new_key.trim().startsWith(":") || new_key.trim().startsWith("=") || new_key.trim().startsWith("-")) {
-			error_text = "Name cannot start with ':', '=', or '-'";
-			return false;
-		} else if (new_href.includes(",")) {
-			error_text = "URL cannot contain commas";
-			return false;
-		} else {
-			config.links.push({
-				key: new_key.trim(),
-				href: new_href.trim()
-			});
-		}
+		config.links.push({
+			key: new_key.trim(),
+			href: new_href.trim()
+		});
 	} else {
-		// Found: set
-		// TODO: other checks? Validate the value?
 		config.links[foundIndex].href = new_href.trim();
 	}
 	saveConfig();
@@ -91,22 +89,62 @@ function setLink(new_key, new_href) {
 
 // Delete a key and return whether successful
 function deleteLink(new_key) {
-	let foundIndex = -1;
-	for (let i = 0; i < config.links.length; i++) {
-		if (config.links[i].key.toLowerCase().trim() == new_key.toLowerCase().trim()) {
-			foundIndex = i;
-		}
-	}
+	const foundIndex = config.links.findIndex((l) => (
+		l.key.toLowerCase().trim() === new_key.toLowerCase().trim()
+	));
+
 	if (foundIndex == -1) {
-		// Does not exist
 		error_text = "Link key not found; please provide the full name";
 		return false;
 	} else {
-		// Found: set
 		config.links.splice(foundIndex, 1);
 	}
 	saveConfig();
 	return true;
+}
+
+function parseSetArguments(arguments_string) {
+	let key_value = "";
+	let href_value = "";
+	let foundSpace = false;
+	for (let i = arguments_string.length - 1; i >= 0; i--) {
+		const thischar = arguments_string.substring(i, i + 1);
+		if (foundSpace) key_value = thischar + key_value;
+		else if (thischar == ' ') foundSpace = true;
+		else href_value = thischar + href_value;
+	}
+	key_value = key_value.trim();
+	href_value = href_value.trim();
+
+	return { key_value, href_value };
+}
+
+function populateTemplate(templateString, args) {
+	let res = "";
+	// Regex matches "{0}".
+	// No need to worry about escaping literal { and } as they are not used in URLs (would be encoded)
+	let regex = /{\d+}/;
+	while (templateString.search(regex) != -1) {
+		const currIndex = templateString.search(regex);
+		let argNum = 0;
+		let i = currIndex + 1;
+		while (templateString[i] >= '0' && templateString[i] <= '9') {
+			argNum *= 10;
+			argNum += templateString.charCodeAt(i) - '0'.charCodeAt(0);
+			i += 1;
+		}
+		// Build next part of string
+		res += templateString.substring(0, currIndex);
+		if (argNum >= args.length || argNum < 0) {
+			error_text = `Argument #${argNum} is required but not provided`;
+			return false;
+		}
+		res += args[argNum];
+		templateString = templateString.substring(i + 1);
+	}
+	res += templateString;
+
+	return res;
 }
 
 // Process entered input and return whether successful
@@ -126,19 +164,9 @@ function processInput(new_value) {
 		} else if (new_value.startsWith(":set")) {
 			// Set
 			// Parse to find arguments
-			let arguments_string = new_value.substring(4).trim();
-			let key_value = "";
-			let href_value = "";
-			let foundSpace = false;
-			for (let i = arguments_string.length - 1; i >= 0; i--) {
-				let thischar = arguments_string.substring(i, i + 1);
-				if (foundSpace) key_value = thischar + key_value;
-				else if (thischar == ' ') foundSpace = true;
-				else href_value = thischar + href_value;
-			}
-			key_value = key_value.trim();
-			href_value = href_value.trim();
-			return setLink(key_value, href_value);
+			const arguments_string = new_value.substring(4).trim();
+			const parsed = parseSetArguments(arguments_string);
+			return setLink(parsed.key_value, parsed.href_value);
 		} else if (new_value.startsWith(":export")) {
 			// Export as a .json file
 			exportFile();
@@ -149,7 +177,7 @@ function processInput(new_value) {
 			document.getElementById("file-uploader").click();
 			return true;
 		} else if (new_value.startsWith(":resetconfig")) {
-			config = structuredClone(config_default);
+			config = structuredClone(CONFIG_DEFAULT);
 			saveConfig();
 			return true;
 		} else if (new_value.startsWith(":help")) {
@@ -168,7 +196,23 @@ function processInput(new_value) {
 		else window.location.href = "https://" + new_value.substring(1).trim();
 	} else if (new_value.startsWith("-")) {
 		// Web search
-		window.location.href = "https://google.com/search?q=" + new_value.substring(1).trim();
+		window.location.href = `${config.search_url_prefix}?q=${new_value.substring(1).trim()}`;
+	} else if (new_value.startsWith("+")) {
+		// Custom template
+		const parsed = new_value.substring(1).trim().split(" ");
+		const template = config.templates[parsed[0]];
+		if (!template) {
+			error_text = "Not a template id";
+			return false;
+		}
+
+		const res = populateTemplate(template, parsed.slice(1));
+		if (typeof res === 'string') {
+			location.href = res;
+			return true;
+		} else {
+			return false;
+		}
 	} else {
 		// Link: choose the selected one of the filtered
 		if (links_filtered.length == 0) {
@@ -187,10 +231,9 @@ function processInput(new_value) {
 
 // Compare two links
 function compareLinks(a, b) {
-	// First, priority
-	if (a.priority > b.priority) return -1;
-	else if (a.priority < b.priority) return 1;
-	// Second, key
+	if (a?.priority > b?.priority) return -1;
+	else if (a?.priority < b?.priority) return 1;
+
 	if (a.key < b.key) return -1;
 	else if (a.key > b.key) return 1;
 	else return 0;
@@ -208,13 +251,13 @@ function updateFiltered(new_value) {
 	helptext.className = "normal";
 	helptext.innerText = "";
 	// Based on the contents of the box
-	let trimmed = new_value.trim().toLowerCase();
+	const trimmed = new_value.trim().toLowerCase();
 	let shouldFilter = true;
 	let filterTo = trimmed;
 	if (trimmed == "") {
 		// Empty: show or hide, based on the setting
 		if (config.display_when_empty) {
-			links_filtered = config.links.slice();
+			links_filtered = config.links.map(link => ({ ...link, priority: 0 }));
 		} else {
 			links_filtered = [];
 		}
@@ -240,9 +283,9 @@ function updateFiltered(new_value) {
 		links_filtered = [];
 		for (const link of config.links) {
 			// TODO: ignore all spaces for easier search?
-			let matchesFilter = link.key.toLowerCase().includes(filterTo);
+			const matchesFilter = link.key.toLowerCase().includes(filterTo);
 			if (matchesFilter) {
-				links_filtered.push(structuredClone(link));
+				links_filtered.push({ ...link, priority: 0 });
 				if (link.key.toLowerCase().startsWith(filterTo)) {
 					// First priority: starts with
 					links_filtered[links_filtered.length - 1].priority = 1;
@@ -264,6 +307,9 @@ function updateFiltered(new_value) {
 	} else if (new_value.startsWith("-")) {
 		helptext.className = "normal";
 		helptext.innerText = "Enter a web search (ex. -marsupials)";
+	} else if (new_value.startsWith("+")) {
+		helptext.className = "normal";
+		helptext.innerText = "Enter your custom command (ex. +mycommand arg1 arg2)";
 	}
 	// Handle selection
 	if (selectedi >= links_filtered.length) selectedi = links_filtered.length - 1;
@@ -272,9 +318,9 @@ function updateFiltered(new_value) {
 // Export to a file
 function exportFile() {
 	// Simply export the config as a prettified JSON
-	let text = JSON.stringify(config, null, 4);
+	const text = JSON.stringify(config, null, 4);
 	// Download the config
-	let elem = document.createElement("a");
+	const elem = document.createElement("a");
 	elem.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(text));
 	elem.setAttribute("download", "homepage_omni_config.json");
 	elem.style.display = "none";
@@ -288,7 +334,7 @@ function importFromString(theText) {
 	// Simply parse the config from a JSON
 	config = JSON.parse(theText);
 	// Fill in any missing fields with the defaults using the ES6 spread operator
-	config = { ...config_default, ...config };
+	config = { ...CONFIG_DEFAULT, ...config };
 	// TODO: Do not add a link if the URL or the key do not exist or are invalid (corrupted)
 	// Update
 	sortLinks();
@@ -307,7 +353,7 @@ document.getElementById("file-uploader").addEventListener("change", () => {
 	if (document.getElementById("file-uploader").files.length <= 0) return;
 	// Try to parse the value
 	const file = document.getElementById("file-uploader").files[0];
-	let reader = new FileReader();
+	const reader = new FileReader();
 	reader.addEventListener("load", function() {
 		// Loaded the text content
 		const textContent = reader.result;
@@ -345,31 +391,33 @@ function render() {
 			new_div.scrollIntoView();
 		}
 	}
-	// Update the clock
-	updateClock();
 	// Update the placeholder
 	omnibar.placeholder = config.bar_placeholder;
 }
 
 function updateTheme() {
 	// Update the theme color variables in the html's css to align with the config's theme
+	const VALID_THEME_KEYS = ["mainbg", "lightbg", "midbg", "blue", "bluedark"];
+
+	const valid_hex = /#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})/;
 	for (const [key, val] of Object.entries(config.theme)) {
-		if (!key.startsWith("--")) {
-			// Only allow CSS variables
-			continue;
+		const allowed = VALID_THEME_KEYS.includes(key) && valid_hex.test(val);
+		if (allowed) {
+			document.documentElement.style.setProperty(`--${key}`, val);
 		}
-		document.documentElement.style.setProperty(key, val);
 	}
 }
 
 // On updating
 omnibar.addEventListener("change", () => {
-	let new_value = omnibar.value;
-	updateFiltered(new_value);
+	updateFiltered(omnibar.value);
+	render();
+});
+omnibar.addEventListener("keyup", (_e) => {
+	updateFiltered(omnibar.value);
 	render();
 });
 omnibar.addEventListener("keydown", (e) => {
-	// Arrows
 	if (e.key === "ArrowUp") {
 		// Move selection up
 		selectedi--;
@@ -380,20 +428,8 @@ omnibar.addEventListener("keydown", (e) => {
 		selectedi++;
 		if (selectedi >= links_filtered.length) selectedi = 0;
 		render();
-	}
-});
-omnibar.addEventListener("keyup", (e) => {
-	let new_value = omnibar.value;
-	// Update
-	updateFiltered(new_value);
-	render();
-});
-// On entering or updating
-omnibar.addEventListener("keypress", (e) => {
-	let new_value = omnibar.value;
-	if (e.key === "Enter") {
-		// Enter
-		let success = processInput(new_value);
+	} else if (e.key === "Enter") {
+		const success = processInput(omnibar.value);
 		if (success) {
 			// Clear the box
 			omnibar.value = "";
@@ -421,48 +457,33 @@ async function saveConfig() {
 
 // Load config from storage, if possible, and render
 async function loadConfig() {
-	if (is_chrome) {
-		// Use chrome storage
-		// TODO: test more in chrome
-		chrome.storage.local.get(["config"], (result) => {
-			// Based on result
-			if (
-				result != null && result != undefined
-				&& Object.keys(result).length !== 0
-				&& "config" in result
-			) {
-				// Update to result
-				config = result["config"];
-				// Fill in any missing fields with the defaults using the ES6 spread operator
-				config = { ...config_default, ...config };
-				// Update
-				sortLinks();
-				updateFiltered("");
-				render();
-				updateClock();
-				updateTheme();
-			}
-		});
-	} else {
-		// Use cross-browser storage
-		let result = await browser.storage.local.get(["config"]);
-		// Based on result
+	function useStorageResult(result) {
 		if (
 			result != null && result != undefined
 			&& Object.keys(result).length !== 0
 			&& "config" in result
 		) {
-			// Update to result
 			config = result["config"];
-			// Fill in any missing fields with the defaults using the ES6 spread operator
-			config = { ...config_default, ...config };
-			// Update
+			// Fill in any missing fields
+			config = { ...CONFIG_DEFAULT, ...config };
 			sortLinks();
 			updateFiltered("");
 			render();
 			updateClock();
 			updateTheme();
 		}
+	}
+
+	if (is_chrome) {
+		// Use chrome storage
+		// TODO: test more in chrome
+		chrome.storage.local.get(["config"], (result) => {
+			useStorageResult(result);
+		});
+	} else {
+		// Use cross-browser storage
+		const result = await browser.storage.local.get(["config"]);
+		useStorageResult(result);
 	}
 }
 
@@ -477,43 +498,51 @@ function padTime(time) {
 
 // Render a specific clock given its ID, a date, a region name, and whether to use UTC (for global clocks)
 function renderClock(clockid, d, region, useUTC) {
+	const hours = useUTC ? d.getUTCHours() : d.getHours();
+	const minutes = useUTC ? d.getUTCMinutes() : d.getMinutes();
+	const fullYear = useUTC ? d.getUTCFullYear() : d.getFullYear();
+	const month = useUTC ? d.getUTCMonth() : d.getMonth();
+	const date = useUTC ? d.getUTCDate() : d.getDate();
+	const day = useUTC ? d.getUTCDay() : d.getDay();
+
+	const timeRender = `${padTime(hours)}:${padTime(minutes)}`;
+	const dateRender = `${fullYear}/${padTime(month + 1)}/${padTime(date)} - ${weekdays[day]}`;
+
 	document.getElementById("clockitem" + clockid).style.display = "inline";
-	if (useUTC) {
-		document.getElementById("clocktext" + clockid).innerText = padTime(d.getUTCHours()) + ":" + padTime(d.getUTCMinutes());
-		document.getElementById("datetext" + clockid).innerText = d.getUTCFullYear() + "/" + padTime(d.getUTCMonth() + 1) + "/" + padTime(d.getUTCDate()) + " - " + weekdays[d.getUTCDay()];
-	} else {
-		document.getElementById("clocktext" + clockid).innerText = padTime(d.getHours()) + ":" + padTime(d.getMinutes());
-		document.getElementById("datetext" + clockid).innerText = d.getFullYear() + "/" + padTime(d.getMonth() + 1) + "/" + padTime(d.getDate()) + " - " + weekdays[d.getDay()];
-	}
+	document.getElementById("clocktext" + clockid).innerText = timeRender;
+	document.getElementById("datetext" + clockid).innerText = dateRender;
 	document.getElementById("regiontext" + clockid).innerText = region;
 }
 
 // Update clock and time
 const eventbox = document.getElementById("eventbox");
+const clockItem1 = document.getElementById("clockitem1");
+const clockItem2 = document.getElementById("clockitem2");
+const clockItem3 = document.getElementById("clockitem3");
 function updateClock() {
 	// Current time and date
-	let d = new Date();
-	let currHr = d.getHours();
-	let currMin = d.getMinutes();
-	let currSec = d.getSeconds();
-	let currWeekday = d.getDay();
-	let currWeekdayChar = weekdaysChar[currWeekday];
+	const d = new Date();
+	const currHr = d.getHours();
+	const currMin = d.getMinutes();
+	const currSec = d.getSeconds();
+	const currWeekday = d.getDay();
+	const currWeekdayChar = weekdaysChar[currWeekday];
 	// Display all clocks
 	if (config.clock1_name == "hidden") {
-		document.getElementById("clockitem1").style.display = "none";
+		clockItem1.style.display = "none";
 	} else {
 		renderClock("1", d, config.clock1_name, false);
 	}
 	if (config.clock2_name == "hidden") {
-		document.getElementById("clockitem2").style.display = "none";
+		clockItem2.style.display = "none";
 	} else {
-		let d2 = new Date(new Date().getTime() + config.clock2_utc_offset * 3600 * 1000);
+		const d2 = new Date(new Date().getTime() + config.clock2_utc_offset * 3600 * 1000);
 		renderClock("2", d2, config.clock2_name, true);
 	}
 	if (config.clock3_name == "hidden") {
-		document.getElementById("clockitem3").style.display = "none";
+		clockItem3.style.display = "none";
 	} else {
-		let d3 = new Date(new Date().getTime() + config.clock3_utc_offset * 3600 * 1000);
+		const d3 = new Date(new Date().getTime() + config.clock3_utc_offset * 3600 * 1000);
 		renderClock("3", d3, config.clock3_name, true);
 	}
 	// Events timers
@@ -527,20 +556,20 @@ function updateClock() {
 			// TODO: test more
 			continue;
 		}
-		let totalDiffMin = (ev.hr * 60 + ev.min) - (currHr * 60 + currMin + 1);
-		let diffHr = Math.floor(totalDiffMin / 60);
-		let diffMin = totalDiffMin % 60;
-		let diffSec = 60 - currSec;
+		const totalDiffMin = (ev.hr * 60 + ev.min) - (currHr * 60 + currMin + 1);
+		const diffHr = Math.floor(totalDiffMin / 60);
+		const diffMin = totalDiffMin % 60;
+		const diffSec = 60 - currSec;
 		if (totalDiffMin < config.event_display_duration_mins && totalDiffMin >= 0) {
-			let evdisp = document.createElement("span");
+			const evdisp = document.createElement("span");
 			evdisp.className = "event";
 			if (diffHr == 0) {
-				evdisp.innerText = ev.name + " in " + padTime(diffMin) + " min " + padTime(diffSec) + " sec";
+				evdisp.innerText = `${ev.name} in ${padTime(diffMin)} min ${padTime(diffSec)} sec`;
 			} else {
-				evdisp.innerText = ev.name + " in " + padTime(diffHr) + " hr " + padTime(diffMin) + " min " + padTime(diffSec) + " sec";
+				evdisp.innerText = `${ev.name} in ${padTime(diffHr)} hr ${padTime(diffMin)} min ${padTime(diffSec)} sec`;
 			}
 			eventbox.appendChild(evdisp);
-			let newbr = document.createElement("br");
+			const newbr = document.createElement("br");
 			eventbox.appendChild(newbr);
 		}
 	}
