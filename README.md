@@ -16,7 +16,10 @@ you create and access quick links via an omnibar
 
 This extension works in both Firefox and Chrome, but is mostly tested in Firefox as my personal homepage.
 
-To test out the extension on Firefox:
+To add the extension to Firefox:
+1. Go to the [GitHub releases](https://github.com/Cadecraft/HomepageOmni/releases) in Firefox and click on the `.xpi` file to install the latest version
+
+To test out the extension on Firefox (e.g. for development):
 1. Download this source code
 2. In Firefox, go to `about:debugging`
 3. Go to the This Firefox section and click `Load Temporary Add-on...`

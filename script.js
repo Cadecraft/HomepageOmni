@@ -1,6 +1,6 @@
 // Homepage Omni
 // Cadecraft
-// v0.6.0; 2025/12/24
+// v1.0.0; 2025/12/25
 
 /* TODO:
 	Feat: allow changing your search engine
