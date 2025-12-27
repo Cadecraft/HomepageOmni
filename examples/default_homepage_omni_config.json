@@ -1,37 +1,38 @@
 {
-    "display_when_empty": true,
-    "links": [
-        {
-            "key": "Example Link",
-            "href": "https://example.com"
-        },
-        {
-            "key": "GitHub",
-            "href": "https://github.com"
-        },
-        {
-            "key": "Google",
-            "href": "https://google.com"
-        },
-        {
-            "key": "YouTube",
-            "href": "https://youtube.com/"
-        }
-    ],
-    "events": [],
-    "event_display_duration_mins": 60,
-    "clock1_name": "",
-    "clock2_name": "hidden",
-    "clock2_utc_offset": 0,
-    "clock3_name": "hidden",
-    "clock3_utc_offset": 0,
-    "bar_placeholder": "Filter criteria, :command, =address, -search",
+	"display_when_empty": true,
+	"links": [
+		{
+			"key": "Example Link",
+			"href": "https://example.com"
+		},
+		{
+			"key": "GitHub",
+			"href": "https://github.com"
+		},
+		{
+			"key": "Google",
+			"href": "https://google.com"
+		},
+		{
+			"key": "YouTube",
+			"href": "https://youtube.com/"
+		}
+	],
+	"events": [],
+	"event_display_duration_mins": 60,
+	"clock1_name": "",
+	"clock2_name": "hidden",
+	"clock2_utc_offset": 0,
+	"clock3_name": "hidden",
+	"clock3_utc_offset": 0,
+	"bar_placeholder": "Filter criteria, :command, =address, -search",
 	"search_url_prefix": "https://google.com/search",
-    "theme": {
-        "mainbg": "#2b2a33",
-        "lightbg": "#42414d",
-        "midbg": "#353440",
-        "blue": "#5aa5c2",
-        "bluedark": "#498cad"
-    }
+	"theme": {
+		"mainbg": "#2b2a33",
+		"lightbg": "#42414d",
+		"midbg": "#353440",
+		"blue": "#5aa5c2",
+		"bluedark": "#498cad"
+	},
+    "templates": {}
 }

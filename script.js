@@ -9,9 +9,6 @@
 	Test: clocks for different time zones
 	Release: publish for Firefox
 
-	Perf: more efficient filtering? (i.e. typing should be faster)
-	Feat: templates
-	Fix: only allow hex colors for style (regex)
 	Docs: update documentation to match
 	Docs: update example configs to match
 */

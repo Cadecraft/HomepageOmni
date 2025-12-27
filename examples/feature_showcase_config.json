@@ -1,77 +1,78 @@
 {
-    "display_when_empty": true,
-    "links": [
-        {
-            "key": "GitHub 💻",
-            "href": "https://github.com"
-        },
-        {
-            "key": "Gmail 📧",
-            "href": "https://mail.google.com"
-        },
-        {
-            "key": "Google 🔍",
-            "href": "https://google.com"
-        },
-        {
-            "key": "LeetCode ❓",
-            "href": "https://leetcode.com"
-        },
-        {
-            "key": "YouTube ▶️",
-            "href": "https://youtube.com/"
-        },
-        {
-            "key": "MDN Web Docs 📄",
-            "href": "https://developer.mozilla.org/en-US/"
-        },
-        {
-            "key": "Weather Underground 🌧",
-            "href": "https://www.wunderground.com/"
-        }
-    ],
-    "events": [
-        {
-            "name": "Lunch",
-            "hr": 12,
-            "min": 0
-        },
-        {
-            "name": "Dinner",
-            "hr": 18,
-            "min": 0
-        },
-        {
-            "name": "Midnight",
-            "hr": 0,
-            "min": 0
-        },
-        {
-            "name": "Work Starts",
-            "hr": 9,
-            "min": 0,
-            "rep": "MTuWThF"
-        },
-        {
-            "name": "Work Ends",
-            "hr": 17,
-            "min": 0,
-            "rep": "MTuWThF"
-        }
-    ],
-    "event_display_duration_mins": 120,
-    "clock1_name": "Local",
-    "clock2_name": "🌍GMT",
-    "clock2_utc_offset": 0,
-    "clock3_name": "🗼Tokyo",
-    "clock3_utc_offset": 9,
-    "bar_placeholder": "Welcome home",
+	"display_when_empty": true,
+	"links": [
+		{
+			"key": "GitHub 💻",
+			"href": "https://github.com"
+		},
+		{
+			"key": "Gmail 📧",
+			"href": "https://mail.google.com"
+		},
+		{
+			"key": "Google 🔍",
+			"href": "https://google.com"
+		},
+		{
+			"key": "LeetCode ❓",
+			"href": "https://leetcode.com"
+		},
+		{
+			"key": "YouTube ▶️",
+			"href": "https://youtube.com/"
+		},
+		{
+			"key": "MDN Web Docs 📄",
+			"href": "https://developer.mozilla.org/en-US/"
+		},
+		{
+			"key": "Weather Underground 🌧",
+			"href": "https://www.wunderground.com/"
+		}
+	],
+	"events": [
+		{
+			"name": "Lunch",
+			"hr": 12,
+			"min": 0
+		},
+		{
+			"name": "Dinner",
+			"hr": 18,
+			"min": 0
+		},
+		{
+			"name": "Midnight",
+			"hr": 0,
+			"min": 0
+		},
+		{
+			"name": "Work Starts",
+			"hr": 9,
+			"min": 0,
+			"rep": "MTuWThF"
+		},
+		{
+			"name": "Work Ends",
+			"hr": 17,
+			"min": 0,
+			"rep": "MTuWThF"
+		}
+	],
+	"event_display_duration_mins": 120,
+	"clock1_name": "Local",
+	"clock2_name": "🌍GMT",
+	"clock2_utc_offset": 0,
+	"clock3_name": "🗼Tokyo",
+	"clock3_utc_offset": 9,
+	"bar_placeholder": "Welcome home",
 	"search_url_prefix": "https://duckduckgo.com/",
-    "theme": {
-        "mainbg": "#15161e",
-        "lightbg": "#262736",
-        "midbg": "#1a1b26",
-        "blue": "#81a5e2",
-        "bluedark": "#50679b"
-    }
+	"theme": {
+		"mainbg": "#15161e",
+		"lightbg": "#262736",
+		"midbg": "#1a1b26",
+		"blue": "#81a5e2",
+		"bluedark": "#50679b"
+	},
+    "templates": {}
 }
