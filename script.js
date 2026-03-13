@@ -162,9 +162,9 @@ function processInput(new_value) {
 			saveConfig();
 		} else if (new_value.startsWith(":clockmode")) {
 			const mode = new_value.substring(10).trim().toLowerCase();
-			if (mode == "24" || mode == "24h") {
+			if (mode === "24" || mode === "24h") {
 				config.clock_use_24h = true;
-			} else if (mode == "12" || mode == "12h") {
+			} else if (mode === "12" || mode === "12h") {
 				config.clock_use_24h = false;
 			} else {
 				error_text = "Usage: :clockmode {12|24}";
@@ -175,14 +175,14 @@ function processInput(new_value) {
 			return true;
 		} else if (new_value.startsWith(":showseconds")) {
 			const value = new_value.substring(12).trim().toLowerCase();
-			if (value == "") {
+			if (value === "") {
 				config.clock_show_seconds = !config.clock_show_seconds;
-			} else if (value == "on" || value == "true" || value == "yes" || value == "1") {
+			} else if (value === "true") {
 				config.clock_show_seconds = true;
-			} else if (value == "off" || value == "false" || value == "no" || value == "0") {
+			} else if (value === "false") {
 				config.clock_show_seconds = false;
 			} else {
-				error_text = "Usage: :showseconds {on|off}";
+				error_text = "Usage: :showseconds {true|false}";
 				return false;
 			}
 			saveConfig();

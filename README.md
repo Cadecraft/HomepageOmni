@@ -58,7 +58,7 @@ Commands are prefixed with `:`.
 - `:show` - Show all links by default (when the omnibar is empty)
 - `:hide` - Hide all links by default
 - `:clockmode {12|24}` - Set clocks to 12-hour or 24-hour format
-- `:showseconds {on|off}` - Enable or disable seconds on clocks (omit argument to toggle)
+- `:showseconds {true|false}` - Enable or disable seconds on clocks (omit argument to toggle)
 - `:export` - Export/save the configuration to a .json file
 - `:import` - Import/load the configuration from a .json file
 - `:resetconfig` - Reset the entire configuration (useful if corrupted)
