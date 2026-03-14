@@ -633,7 +633,7 @@ function updateClock() {
 let clockTickTimeoutId = null;
 function scheduleNextClockTick() {
 	const now = Date.now();
-	const delayMs = 1000 - (now % 1000) || 1000;
+	const delayMs = 1000 - (now % 1000);
 	clockTickTimeoutId = setTimeout(() => {
 		if (!document.hidden) {
 			updateClock();
