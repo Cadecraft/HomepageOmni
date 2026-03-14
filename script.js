@@ -333,7 +333,7 @@ function updateFiltered(new_value) {
 		helptext.innerText = "Set clock format (ex. :clockmode 12 or :clockmode 24)";
 	} else if (new_value.startsWith(":showseconds")) {
 		helptext.className = "normal";
-		helptext.innerText = "Toggle or set seconds (ex. :showseconds, :showseconds on, :showseconds off)";
+		helptext.innerText = "Toggle or set seconds (ex. :showseconds, :showseconds true, :showseconds false)";
 	} else if (new_value.startsWith(":") && helptext.innerText == "") {
 		helptext.className = "normal";
 		helptext.innerText = "Enter a command (ex. :set, :delete)";
