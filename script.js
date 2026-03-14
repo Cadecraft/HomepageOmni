@@ -611,7 +611,13 @@ async function loadConfig() {
 			// Respect special prefixes: +templates, =urls, -search, :commands
 			if (hasExplicitPrefix(queryParam)) {
 				// Special command - process directly
-				processInput(queryParam);
+				success = processInput(queryParam);
+				if (success) {
+					omnibar.value = "";
+				}
+				omnibar.focus();
+				updateFiltered(omnibar.value);
+				render();
 			} else {
 				// Regular query - try to match a link, otherwise search
 				updateFiltered(queryParam);
