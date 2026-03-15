@@ -23,13 +23,7 @@ function validateBookmarkPrefix(prefixArgument) {
 	};
 }
 
-async function recreateBookmark(title, url) {
-	const existing = await extension_api.bookmarks.search(title);
-	for (const bookmark of existing) {
-		if (bookmark.title === title && typeof bookmark.url === "string") {
-			await extension_api.bookmarks.remove(bookmark.id);
-		}
-	}
+async function createBookmark(title, url) {
 	const folderId = await ensureBookmarkFolder();
 	await extension_api.bookmarks.create({
 		parentId: folderId,
@@ -73,6 +67,12 @@ async function createBookmarkShortcuts(rawPrefixArgument) {
     }
     const omniPrefix = validation.value;
 
+	const folderId = await ensureBookmarkFolder();
+	const children = await extension_api.bookmarks.getChildren(folderId);
+	for (const child of children) {
+		await extension_api.bookmarks.remove(child.id);
+	}
+
 	const runtimeUrl = extension_api.runtime.getURL("homepage.html?q=%s");
 	const createdPrefixes = [];
 	const skippedPrefixes = [];
@@ -80,7 +80,7 @@ async function createBookmarkShortcuts(rawPrefixArgument) {
 	for (const prefix of native_bookmark_prefixes) {
 		const bookmarkUrl = runtimeUrl.replace("%s", `${encodeURIComponent(prefix)}%s`);
 		try {
-			await recreateBookmark(`Homepage Omni (${prefix})`, bookmarkUrl);
+			await createBookmark(`Homepage Omni (${prefix})`, bookmarkUrl);
 			createdPrefixes.push(prefix);
 		} catch (_error) {
 			skippedPrefixes.push(prefix);
@@ -88,7 +88,7 @@ async function createBookmarkShortcuts(rawPrefixArgument) {
 	}
 
 	try {
-		await recreateBookmark(`Homepage Omni (${omniPrefix})`, runtimeUrl);
+		await createBookmark(`Homepage Omni (${omniPrefix})`, runtimeUrl);
 		createdPrefixes.push(omniPrefix);
 	} catch (_error) {
 		skippedPrefixes.push(omniPrefix);
