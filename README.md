@@ -57,7 +57,7 @@ Commands are prefixed with `:`.
 - `:delete {link name}` - Delete the link with the given name
 - `:show` - Show all links by default (when the omnibar is empty)
 - `:hide` - Hide all links by default
-- `:bookmark {Omni prefix}` - Create Firefox bookmarks for `:`, `+`, `-`, `=` and optionally your own omni keyword, ready for manual keyword assignment in Firefox
+- `:bookmark {Omni prefix}` - Create Firefox bookmarks for `:`, `+`, `-`, `=` and your own omni keyword, ready for manual keyword assignment in Firefox
 - `:clockmode {12|24}` - Set clocks to 12-hour or 24-hour format
 - `:showseconds {true|false}` - Enable or disable seconds on clocks (omit argument to toggle)
 - `:export` - Export/save the configuration to a .json file
