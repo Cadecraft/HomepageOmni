@@ -161,6 +161,10 @@ function populateTemplate(templateString, args) {
 
 // Process entered input and return whether successful
 function processInput(new_value) {
+	// Allow (ignore) one space after the prefix
+    if (new_value[1] === " ") {
+        new_value = new_value[0] + new_value.substring(2);
+    }
 	// Determine type by first character
 	if (new_value.startsWith(":")) {
 		// Command
@@ -220,7 +224,7 @@ function processInput(new_value) {
 			config = structuredClone(CONFIG_DEFAULT);
 			saveConfig();
 			return true;
-		} else if (new_value === ":bookmark" || new_value.startsWith(":bookmark ")) {
+		} else if (new_value.startsWith(":bookmark")) {
 			createBookmarkShortcuts(new_value.substring(9));
 			return true;
 		} else if (new_value.startsWith(":help")) {
