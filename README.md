@@ -184,8 +184,8 @@ You can use Homepage Omni directly from the Firefox address bar by generating th
 
 1. Open Homepage Omni in Firefox.
 2. Run `:bookmark <Omni prefix>` in the omnibar.
-3. Homepage Omni creates bookmarks for `:`, `+`, `-`, `=`, and your chosen link prefix inside a `Homepage Omni` bookmark folder using the current extension URL.
-4. Open the bookmarks in that folder in Firefox bookmark properties and assign the keywords `:`, `+`, `-`, `=`, and your chosen Omni prefix manually.
+    - Homepage Omni creates bookmarks for `:`, `+`, `-`, `=`, and your chosen link prefix inside a `Homepage Omni` bookmark folder using the current extension URL.
+4. Open the bookmarks in that folder in Firefox bookmark properties and assign the [keywords](https://support.mozilla.org/en-US/kb/bookmarks-firefox#w_how-to-use-keywords-with-bookmarks) `:`, `+`, `-`, `=`, and your chosen Omni prefix manually.
 
 ### Examples
 *Note: When using the address bar, a space is required after the prefix.*
