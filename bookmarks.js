@@ -40,10 +40,9 @@ async function recreateBookmark(title, url) {
 
 async function ensureBookmarkFolder() {
 	const existing = await extension_api.bookmarks.search("Homepage Omni");
-	for (const bookmark of existing) {
-		if (bookmark.title === "Homepage Omni" && typeof bookmark.url !== "string") {
-			return bookmark.id;
-		}
+	const matchingFolder = existing.find((bookmark) => bookmark.title === "Homepage Omni" && typeof bookmark.url !== "string");
+	if (matchingFolder) {
+  		return matchingFolder.id;
 	}
 
 	const folder = await extension_api.bookmarks.create({
@@ -58,10 +57,7 @@ async function createBookmarkShortcuts(rawPrefixArgument) {
 	}
 
     await browser.permissions.request({ permissions: ["bookmarks"] }).catch();
-    granted = await browser.permissions.getAll().then((permissions) => {
-        if (permissions?.permissions?.includes("bookmarks")) { return true }
-        return false;
-    });
+    const granted = await browser.permissions.getAll().then((permissions) => permissions?.permissions?.includes("bookmarks"));
     if (!granted || !extension_api?.bookmarks?.create) {
         error_text = "Permission to create bookmarks was denied.";
         updateFiltered(omnibar.value);
@@ -70,13 +66,12 @@ async function createBookmarkShortcuts(rawPrefixArgument) {
 
 
 	const trimmedArgument = rawPrefixArgument.trim();
-	let omniPrefix = null;
     const validation = validateBookmarkPrefix(trimmedArgument);
     if (!validation.valid) {
         error_text = validation.message;
         return false;
     }
-    omniPrefix = validation.value;
+    const omniPrefix = validation.value;
 
 	const runtimeUrl = extension_api.runtime.getURL("homepage.html?q=%s");
 	const createdPrefixes = [];
@@ -92,13 +87,11 @@ async function createBookmarkShortcuts(rawPrefixArgument) {
 		}
 	}
 
-	if (trimmedArgument.length > 0) {
-		try {
-			await recreateBookmark(`Homepage Omni (${omniPrefix})`, runtimeUrl);
-			createdPrefixes.push(omniPrefix);
-		} catch (_error) {
-			skippedPrefixes.push(omniPrefix);
-		}
+	try {
+		await recreateBookmark(`Homepage Omni (${omniPrefix})`, runtimeUrl);
+		createdPrefixes.push(omniPrefix);
+	} catch (_error) {
+		skippedPrefixes.push(omniPrefix);
 	}
 
 	if (createdPrefixes.length === 0) {
