@@ -517,8 +517,7 @@ async function loadConfig() {
 					selectedi = 0;
 					processInput(omnibar.value);
 				} else {
-					// No link matches - treat as a web search
-					processInput("-" + omnibar.value);
+					omnibar.focus();
 				}
 			}
 		} else {
