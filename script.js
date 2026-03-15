@@ -12,6 +12,11 @@
 	Docs: update example configs to match
 */
 
+function getQueryParam(name) {
+	const params = new URLSearchParams(window.location.search);
+	return params.get(name);
+}
+
 // Data
 let links_filtered = [];
 let selectedi = 0; // The current index selected from links_filtered
@@ -57,6 +62,12 @@ let config = structuredClone(CONFIG_DEFAULT);
 // Determine browser type
 // TODO: better way of determining browser type?
 const is_chrome = navigator.userAgent.includes("Chrome");
+const extension_api = typeof browser !== "undefined" ? browser : chrome;
+const native_bookmark_prefixes = [":", "+", "-", "="];
+
+function hasExplicitPrefix(value) {
+	return native_bookmark_prefixes.some((prefix) => value.startsWith(prefix));
+}
 
 // Set a key and return whether successful
 function setLink(new_key, new_href) {
@@ -150,6 +161,10 @@ function populateTemplate(templateString, args) {
 
 // Process entered input and return whether successful
 function processInput(new_value) {
+	// Allow (ignore) one space after the prefix
+    if (new_value[1] === " ") {
+        new_value = new_value[0] + new_value.substring(2);
+    }
 	// Determine type by first character
 	if (new_value.startsWith(":")) {
 		// Command
@@ -208,6 +223,9 @@ function processInput(new_value) {
 		} else if (new_value.startsWith(":resetconfig")) {
 			config = structuredClone(CONFIG_DEFAULT);
 			saveConfig();
+			return true;
+		} else if (new_value.startsWith(":bookmark")) {
+			createBookmarkShortcuts(new_value.substring(9));
 			return true;
 		} else if (new_value.startsWith(":help")) {
 			// Tell to read the README.md
@@ -291,6 +309,9 @@ function updateFiltered(new_value) {
 			links_filtered = [];
 		}
 		shouldFilter = false;
+	} else if (trimmed.startsWith(":bookmark")) {
+		shouldFilter = false;
+		helptext.innerText = ":bookmark {Omni prefix}";
 	} else if (trimmed.startsWith(":set") || trimmed.startsWith(":delete")) {
 		// Command: trim and filter for some commands (ex. :set and :delete)
 		filterTo = "";
@@ -501,12 +522,14 @@ async function loadConfig() {
 			config = result["config"];
 			// Fill in any missing fields
 			config = { ...CONFIG_DEFAULT, ...config };
-			sortLinks();
-			updateFiltered("");
-			render();
-			updateClock();
-			updateTheme();
 		}
+		// Always run setup after config is determined (either from storage or default)
+		sortLinks();
+		updateFiltered("");
+		render();
+		updateClock();
+		updateTheme();
+		handleQueryParam();
 	}
 
 	if (is_chrome) {
@@ -519,6 +542,34 @@ async function loadConfig() {
 		// Use cross-browser storage
 		const result = await browser.storage.local.get(["config"]);
 		useStorageResult(result);
+	}
+}
+
+function handleQueryParam() {
+	const queryParam = getQueryParam("q");
+	if (queryParam) {
+		omnibar.value = queryParam;
+
+		if (hasExplicitPrefix(queryParam)) {
+			success = processInput(queryParam);
+			if (success) {
+				omnibar.value = "";
+			}
+			omnibar.focus();
+			updateFiltered(omnibar.value);
+			render();
+		} else {
+			updateFiltered(queryParam);
+			render();
+			if (links_filtered.length > 0) {
+				selectedi = 0;
+				processInput(omnibar.value);
+			} else {
+				omnibar.focus();
+			}
+		}
+	} else {
+		omnibar.focus();
 	}
 }
 
@@ -663,5 +714,5 @@ sortLinks();
 updateFiltered("");
 render();
 resyncClockTicker();
-// Load config from storage, if possible
+// Load config from storage if possible, then update with that config
 loadConfig();
