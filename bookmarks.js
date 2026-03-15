@@ -1,26 +1,25 @@
-function validateBookmarkPrefix(rawPrefix) {
-	const trimmedPrefix = rawPrefix.trim();
-	if (trimmedPrefix.length === 0) {
+function validateBookmarkPrefix(prefixArgument) {
+    if (prefixArgument.length === 0) {
+        return {
+            valid: false,
+            message: 'Omni prefix is required'
+        };
+    }
+	if (prefixArgument.includes(" ")) {
 		return {
 			valid: false,
-			message: "Invalid user prefix \"\""
+			message: `Omni prefix cannot contain spaces`
 		};
 	}
-	if (trimmedPrefix.includes(" ")) {
+	if (native_bookmark_prefixes.includes(prefixArgument)) {
 		return {
 			valid: false,
-			message: `Invalid user prefix "${trimmedPrefix}"`
-		};
-	}
-	if (native_bookmark_prefixes.includes(trimmedPrefix)) {
-		return {
-			valid: false,
-			message: `Invalid user prefix "${trimmedPrefix}"`
+			message: `Cannot use any existing bookmark prefixes: ${native_bookmark_prefixes.reduce((a, b) => a + ", " + b)}`
 		};
 	}
 	return {
 		valid: true,
-		value: trimmedPrefix
+		value: prefixArgument
 	};
 }
 
@@ -71,15 +70,13 @@ async function createBookmarkShortcuts(rawPrefixArgument) {
 
 
 	const trimmedArgument = rawPrefixArgument.trim();
-	let userPrefix = null;
-	if (rawPrefixArgument.length > 0) {
-		const validation = validateBookmarkPrefix(rawPrefixArgument);
-		if (!validation.valid) {
-			error_text = validation.message;
-			return false;
-		}
-		userPrefix = validation.value;
-	}
+	let omniPrefix = null;
+    const validation = validateBookmarkPrefix(trimmedArgument);
+    if (!validation.valid) {
+        error_text = validation.message;
+        return false;
+    }
+    omniPrefix = validation.value;
 
 	const runtimeUrl = extension_api.runtime.getURL("homepage.html?q=%s");
 	const createdPrefixes = [];
@@ -97,10 +94,10 @@ async function createBookmarkShortcuts(rawPrefixArgument) {
 
 	if (trimmedArgument.length > 0) {
 		try {
-			await recreateBookmark(`Homepage Omni (${userPrefix})`, runtimeUrl);
-			createdPrefixes.push(userPrefix);
+			await recreateBookmark(`Homepage Omni (${omniPrefix})`, runtimeUrl);
+			createdPrefixes.push(omniPrefix);
 		} catch (_error) {
-			skippedPrefixes.push(userPrefix);
+			skippedPrefixes.push(omniPrefix);
 		}
 	}
 
