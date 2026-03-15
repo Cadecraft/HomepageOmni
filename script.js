@@ -490,40 +490,7 @@ async function loadConfig() {
 		render();
 		updateClock();
 		updateTheme();
-		
-		// Handle Firefox bookmark keyword integration: ?q=query parameter
-		// This runs AFTER config is loaded so newly imported configs are used
-		const queryParam = getQueryParam("q");
-		if (queryParam) {
-			// Populate omnibar with the query
-			omnibar.value = queryParam;
-			
-			// Respect special prefixes: +templates, =urls, -search, :commands
-			if (hasExplicitPrefix(queryParam)) {
-				// Special command - process directly
-				success = processInput(queryParam);
-				if (success) {
-					omnibar.value = "";
-				}
-				omnibar.focus();
-				updateFiltered(omnibar.value);
-				render();
-			} else {
-				// Regular query - try to match a link, otherwise search
-				updateFiltered(queryParam);
-				render();
-				if (links_filtered.length > 0) {
-					// A link matches - navigate to the first matching link
-					selectedi = 0;
-					processInput(omnibar.value);
-				} else {
-					omnibar.focus();
-				}
-			}
-		} else {
-			// No query parameter - focus the omnibar for user input
-			omnibar.focus();
-		}
+		handleQueryParam();
 	}
 
 	if (is_chrome) {
@@ -536,6 +503,34 @@ async function loadConfig() {
 		// Use cross-browser storage
 		const result = await browser.storage.local.get(["config"]);
 		useStorageResult(result);
+	}
+}
+
+function handleQueryParam() {
+	const queryParam = getQueryParam("q");
+	if (queryParam) {
+		omnibar.value = queryParam;
+
+		if (hasExplicitPrefix(queryParam)) {
+			success = processInput(queryParam);
+			if (success) {
+				omnibar.value = "";
+			}
+			omnibar.focus();
+			updateFiltered(omnibar.value);
+			render();
+		} else {
+			updateFiltered(queryParam);
+			render();
+			if (links_filtered.length > 0) {
+				selectedi = 0;
+				processInput(omnibar.value);
+			} else {
+				omnibar.focus();
+			}
+		}
+	} else {
+		omnibar.focus();
 	}
 }
 
@@ -634,6 +629,5 @@ setInterval(() => {
 	}
 }, 1000);
 
-// Load config from storage, if possible
-// (This will also handle Firefox bookmark keyword integration after config loads)
+// Load config from storage if possible, then update with that config
 loadConfig();
