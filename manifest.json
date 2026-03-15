@@ -8,9 +8,11 @@
 		"newtab": "homepage.html"
 	},
 	"permissions": [
-		"bookmarks",
 		"webNavigation",
 		"storage"
+	],
+	"optional_permissions": [
+		"bookmarks"
 	],
 	"browser_specific_settings": {
 		"gecko": {

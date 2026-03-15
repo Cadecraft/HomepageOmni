@@ -53,10 +53,22 @@ async function ensureBookmarkFolder() {
 	return folder.id;
 }
 async function createBookmarkShortcuts(rawPrefixArgument) {
-	if (is_chrome || !extension_api?.bookmarks?.create || !extension_api?.runtime?.getURL) {
+    if (is_chrome || !extension_api?.runtime?.getURL) {
 		error_text = "Bookmark keywords are only supported in Firefox";
 		return false;
 	}
+
+    await browser.permissions.request({ permissions: ["bookmarks"] }).catch();
+    granted = await browser.permissions.getAll().then((permissions) => {
+        if (permissions?.permissions?.includes("bookmarks")) { return true }
+        return false;
+    });
+    if (!granted || !extension_api?.bookmarks?.create) {
+        error_text = "Permission to create bookmarks was denied.";
+        updateFiltered(omnibar.value);
+        return false;
+    }
+
 
 	const trimmedArgument = rawPrefixArgument.trim();
 	let userPrefix = null;
