@@ -212,16 +212,15 @@ async function handleCommand(fullCommand) {
 	const commandName = fullCommand.split(' ')[0];
 	const matchingFunc = COMMAND_MAP[commandName];
 	if (!matchingFunc) {
-		error_text = "Not a command";
-		return false;
+		throw new Error("Not a command");
 	}
 
 	const args = fullCommand.substring(commandName.length).trim();
 
-	return Promise.resolve(matchingFunc(args));
+	return matchingFunc(args);
 }
 
-// Process entered input and return whether successful
+// Process entered input
 async function processInput(new_value) {
 	// Allow (ignore) one space after the prefix
     if (new_value[1] === " ") {
