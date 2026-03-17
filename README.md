@@ -57,6 +57,9 @@ Commands are prefixed with `:`.
 - `:delete {link name}` - Delete the link with the given name
 - `:show` - Show all links by default (when the omnibar is empty)
 - `:hide` - Hide all links by default
+- `:bookmark {Omni prefix}` - Create Firefox bookmarks for `:`, `+`, `-`, `=` and your own omni keyword, ready for manual keyword assignment in Firefox
+- `:clockmode {12|24}` - Set clocks to 12-hour or 24-hour format
+- `:showseconds {true|false}` - Enable or disable seconds on clocks (omit argument to toggle)
 - `:export` - Export/save the configuration to a .json file
 - `:import` - Import/load the configuration from a .json file
 - `:resetconfig` - Reset the entire configuration (useful if corrupted)
@@ -71,6 +74,7 @@ Web searches are prefixed with `-`.
 
 Templates (see below) are prefixed with `+`.
 - `+mytemplate 1` - If you configured it, this will open a specified URL with the argument 1
+
 
 ## Configuration file
 
@@ -121,6 +125,8 @@ Event object format example (creates an event Lunch Time at 12:25pm repeating ea
 - `clock2_utc_offset` - the UTC offset of the second clock (ex. for Tokyo, which is UTC+9, use `+9`)
 - `clock3_name` - the name of the third clock (right) (default `"hidden"`)
 - `clock3_utc_offset` - the UTC offset of the third clock
+- `clock_use_24h` - bool (default `true`; if `false`, clocks use 12-hour time with AM/PM)
+- `clock_show_seconds` - bool (default `false`; if `true`, clocks include seconds)
 
 If you set the name of a clock to be `"hidden"`, it will not appear; to hide all clocks, set them all to `"hidden"`.
 
@@ -170,6 +176,27 @@ example in this repository's `examples` folder, which you can load by running th
 
 Also remember that you can simply enter `:export` in the omnibar to get a copy of your current configuration.
 
+## Firefox Address Bar Integration
+
+You can use Homepage Omni directly from the Firefox address bar by generating the correct bookmark URLs from inside Homepage Omni, then assigning Firefox keywords to those bookmarks.
+
+### Setup Instructions
+
+1. Open Homepage Omni in Firefox.
+2. Run `:bookmark <Omni prefix>` in the omnibar.
+    - Homepage Omni creates bookmarks for `:`, `+`, `-`, `=`, and your chosen link prefix inside a `Homepage Omni` bookmark folder using the current extension URL.
+4. Open the bookmarks in that folder in Firefox bookmark properties and assign the [keywords](https://support.mozilla.org/en-US/kb/bookmarks-firefox#w_how-to-use-keywords-with-bookmarks) `:`, `+`, `-`, `=`, and your chosen Omni prefix manually.
+
+### Examples
+*Note: When using the address bar, a space is required after the prefix.*
+
+- `+ mytemplate 1` - Opens the `mytemplate` template with the argument `1`
+- `- best coffee near me` - Searches for `best coffee near me` in your search engine of choice
+- `= github.com` - Opens the URL `=github.com`
+- `<Omni prefix> spotify` - Opens Homepage Omni, searches for or opens the "Spotify" link
+
+The URLs are always generated with the current extension URL, but this may change between installs. If the bookmarks stop working, re-generate them using the `:bookmark` command. Be sure to re-configure the keywords.
+
 ## Filtering Method
 
 When you type in the omnibar, the links are filtered using these rules:
@@ -187,3 +214,4 @@ The links are sorted using these rules:
 This extension uses the following permissions:
 - `webNavigation` - to follow links
 - `storage` - to locally store only your configuration; nothing else is stored
+- `bookmarks` (Optional) - to add integration for the Firefox address bar, as described above.

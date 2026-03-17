@@ -1,6 +1,5 @@
 // Homepage Omni
 // Cadecraft
-// v1.0.0; 2025/12/25
 
 /* TODO:
 	Feat: allow changing your search engine
@@ -12,6 +11,11 @@
 	Docs: update documentation to match
 	Docs: update example configs to match
 */
+
+function getQueryParam(name) {
+	const params = new URLSearchParams(window.location.search);
+	return params.get(name);
+}
 
 // Data
 let links_filtered = [];
@@ -33,6 +37,8 @@ const CONFIG_DEFAULT = {
 	"event_display_duration_mins": 60,
 	// Clocks (by default, only show clock 1)
 	"clock1_name": "",
+	"clock_use_24h": true,
+	"clock_show_seconds": false,
 	"clock2_name": "hidden",
 	"clock2_utc_offset": 0,
 	"clock3_name": "hidden",
@@ -56,19 +62,22 @@ let config = structuredClone(CONFIG_DEFAULT);
 // Determine browser type
 // TODO: better way of determining browser type?
 const is_chrome = navigator.userAgent.includes("Chrome");
+const extension_api = typeof browser !== "undefined" ? browser : chrome;
+const native_bookmark_prefixes = [":", "+", "-", "="];
 
-// Set a key and return whether successful
+function hasExplicitPrefix(value) {
+	return native_bookmark_prefixes.some((prefix) => value.startsWith(prefix));
+}
+
+// Set a key
 function setLink(new_key, new_href) {
 	const disallowed = [":", "=", "-", "+"];
 	if (new_key.trim().length == 0) {
-		error_text = "Name must not be empty";
-		return false;
+		throw new Error("Name must not be empty");
 	} else if (disallowed.some(d => new_key.trim().startsWith(d))) {
-		error_text = `Name cannot start with these characters: ${disallowed.reduce((a, b) => a + b)}`;
-		return false;
+		throw new Error(`Name cannot start with these characters: ${disallowed.reduce((a, b) => a + b)}`);
 	} else if (new_href.includes(",")) {
-		error_text = "URL cannot contain commas";
-		return false;
+		throw new Error("URL cannot contain commas");
 	}
 
 	const foundIndex = config.links.findIndex((l) => (
@@ -84,23 +93,20 @@ function setLink(new_key, new_href) {
 		config.links[foundIndex].href = new_href.trim();
 	}
 	saveConfig();
-	return true;
 }
 
-// Delete a key and return whether successful
+// Delete a key
 function deleteLink(new_key) {
 	const foundIndex = config.links.findIndex((l) => (
 		l.key.toLowerCase().trim() === new_key.toLowerCase().trim()
 	));
 
 	if (foundIndex == -1) {
-		error_text = "Link key not found; please provide the full name";
-		return false;
+		throw new Error("Link key not found; please provide the full name");
 	} else {
 		config.links.splice(foundIndex, 1);
 	}
 	saveConfig();
-	return true;
 }
 
 function parseSetArguments(arguments_string) {
@@ -136,8 +142,7 @@ function populateTemplate(templateString, args) {
 		// Build next part of string
 		res += templateString.substring(0, currIndex);
 		if (argNum >= args.length || argNum < 0) {
-			error_text = `Argument #${argNum} is required but not provided`;
-			return false;
+			throw new Error(`Argument #${argNum} is required but not provided`);
 		}
 		res += args[argNum];
 		templateString = templateString.substring(i + 1);
@@ -147,49 +152,82 @@ function populateTemplate(templateString, args) {
 	return res;
 }
 
-// Process entered input and return whether successful
-function processInput(new_value) {
-	// Determine type by first character
-	if (new_value.startsWith(":")) {
-		// Command
-		if (new_value == ":show") {
+async function handleCommand(fullCommand) {
+	const COMMAND_MAP = {
+		"show": () => {
 			config.display_when_empty = true;
 			saveConfig();
-		} else if (new_value == ":hide") {
+		},
+		"hide": () => {
 			config.display_when_empty = false;
 			saveConfig();
-		} else if (new_value.startsWith(":delete")) {
-			// Delete
-			return deleteLink(new_value.substring(7).trim());
-		} else if (new_value.startsWith(":set")) {
-			// Set
-			// Parse to find arguments
-			const arguments_string = new_value.substring(4).trim();
-			const parsed = parseSetArguments(arguments_string);
-			return setLink(parsed.key_value, parsed.href_value);
-		} else if (new_value.startsWith(":export")) {
-			// Export as a .json file
-			exportFile();
-			return true;
-		} else if (new_value.startsWith(":import")) {
-			// Import from a .json file
-			// Activate file select
+		},
+		"clockmode": (arg) => {
+			const mode = arg.toLowerCase();
+			if (mode === "24" || mode === "24h") {
+				config.clock_use_24h = true;
+			} else if (mode === "12" || mode === "12h") {
+				config.clock_use_24h = false;
+			} else {
+				error_text = "Usage: :clockmode {12|24}";
+				throw new Error("Usage: :clockmode {12|24}");
+			}
+			saveConfig();
+			updateClock();
+		},
+		"showseconds": (arg) => {
+			const value = arg.toLowerCase();
+			if (value === "") {
+				config.clock_show_seconds = !config.clock_show_seconds;
+			} else if (value === "true") {
+				config.clock_show_seconds = true;
+			} else if (value === "false") {
+				config.clock_show_seconds = false;
+			} else {
+				throw new Error("Usage: :showseconds {true|false}");
+			}
+			saveConfig();
+			updateClock();
+		},
+		"delete": deleteLink,
+		"set": (args) => {
+			const parsed = parseSetArguments(args);
+			setLink(parsed.key_value, parsed.href_value);
+		},
+		"export": exportFile,
+		"import": () => {
 			document.getElementById("file-uploader").click();
-			return true;
-		} else if (new_value.startsWith(":resetconfig")) {
+		},
+		"resetconfig": () => {
 			config = structuredClone(CONFIG_DEFAULT);
 			saveConfig();
-			return true;
-		} else if (new_value.startsWith(":help")) {
-			// Tell to read the README.md
+		},
+		"bookmark": createBookmarkShortcuts,
+		"help": () => {
 			error_text = 'For help, check the included README.md file'
-			return true;
-		} else {
-			// Not a command
-			error_text = "Not a command";
-			return false;
 		}
-		return true;
+	};
+
+	const commandName = fullCommand.split(' ')[0];
+	const matchingFunc = COMMAND_MAP[commandName];
+	if (!matchingFunc) {
+		throw new Error("Not a command");
+	}
+
+	const args = fullCommand.substring(commandName.length).trim();
+
+	return matchingFunc(args);
+}
+
+// Process entered input
+async function processInput(new_value) {
+	// Allow (ignore) one space after the prefix
+    if (new_value[1] === " ") {
+        new_value = new_value[0] + new_value.substring(2);
+    }
+	// Determine type by first character
+	if (new_value.startsWith(":")) {
+		await handleCommand(new_value.substring(1));
 	} else if (new_value.startsWith("=")) {
 		// Go to the address
 		if (new_value.substring(1).startsWith("http")) window.location.href = new_value.substring(1).trim();
@@ -202,29 +240,21 @@ function processInput(new_value) {
 		const parsed = new_value.substring(1).trim().split(" ");
 		const template = config.templates[parsed[0]];
 		if (!template) {
-			error_text = "Not a template id";
-			return false;
+			throw new Error("Not a template id");
 		}
 
 		const res = populateTemplate(template, parsed.slice(1));
-		if (typeof res === 'string') {
-			location.href = res;
-			return true;
-		} else {
-			return false;
-		}
+		location.href = res;
 	} else {
 		// Link: choose the selected one of the filtered
 		if (links_filtered.length == 0) {
 			// Cannot do anything
-			error_text = "No matching links (did you mean to use a :command?)";
-			return false;
+			throw new Error("No matching links (did you mean to use a :command?)");
 		} else {
 			// Go to the link
 			if (selectedi < 0) selectedi = 0;
 			else if (selectedi >= links_filtered.length) selectedi = links_filtered.length - 1;
 			window.location.href = links_filtered[selectedi].href;
-			return true;
 		}
 	}
 }
@@ -262,6 +292,9 @@ function updateFiltered(new_value) {
 			links_filtered = [];
 		}
 		shouldFilter = false;
+	} else if (trimmed.startsWith(":bookmark")) {
+		shouldFilter = false;
+		helptext.innerText = ":bookmark {Omni prefix}";
 	} else if (trimmed.startsWith(":set") || trimmed.startsWith(":delete")) {
 		// Command: trim and filter for some commands (ex. :set and :delete)
 		filterTo = "";
@@ -298,6 +331,12 @@ function updateFiltered(new_value) {
 	if (error_text.length > 0) {
 		helptext.className = "error";
 		helptext.innerText = error_text;
+	} else if (new_value.startsWith(":clockmode")) {
+		helptext.className = "normal";
+		helptext.innerText = "Set clock format (ex. :clockmode 12 or :clockmode 24)";
+	} else if (new_value.startsWith(":showseconds")) {
+		helptext.className = "normal";
+		helptext.innerText = "Toggle or set seconds (ex. :showseconds, :showseconds true, :showseconds false)";
 	} else if (new_value.startsWith(":") && helptext.innerText == "") {
 		helptext.className = "normal";
 		helptext.innerText = "Enter a command (ex. :set, :delete)";
@@ -429,12 +468,17 @@ omnibar.addEventListener("keydown", (e) => {
 		if (selectedi >= links_filtered.length) selectedi = 0;
 		render();
 	} else if (e.key === "Enter") {
-		const success = processInput(omnibar.value);
-		if (success) {
-			// Clear the box
-			omnibar.value = "";
-		}
-		updateFiltered(omnibar.value);
+		processInput(omnibar.value)
+			.then(() => {
+				// Clear the box on success
+				omnibar.value = "";
+			})
+			.catch((err) => {
+				error_text = err.message;
+			})
+			.finally(() => {
+				updateFiltered(omnibar.value);
+			});
 	} else {
 		error_text = "";
 	}
@@ -466,12 +510,14 @@ async function loadConfig() {
 			config = result["config"];
 			// Fill in any missing fields
 			config = { ...CONFIG_DEFAULT, ...config };
-			sortLinks();
-			updateFiltered("");
-			render();
-			updateClock();
-			updateTheme();
 		}
+		// Always run setup after config is determined (either from storage or default)
+		sortLinks();
+		updateFiltered("");
+		render();
+		updateClock();
+		updateTheme();
+		handleQueryParam();
 	}
 
 	if (is_chrome) {
@@ -487,6 +533,34 @@ async function loadConfig() {
 	}
 }
 
+function handleQueryParam() {
+	const queryParam = getQueryParam("q");
+	if (queryParam) {
+		omnibar.value = queryParam;
+
+		if (hasExplicitPrefix(queryParam)) {
+			success = processInput(queryParam);
+			if (success) {
+				omnibar.value = "";
+			}
+			omnibar.focus();
+			updateFiltered(omnibar.value);
+			render();
+		} else {
+			updateFiltered(queryParam);
+			render();
+			if (links_filtered.length > 0) {
+				selectedi = 0;
+				processInput(omnibar.value);
+			} else {
+				omnibar.focus();
+			}
+		}
+	} else {
+		omnibar.focus();
+	}
+}
+
 // Time and date utilities
 const weekdays = ["Sun.", "Mon.", "Tues.", "Wed.", "Thurs.", "Fri.", "Sat."];
 const weekdaysChar = ['Su', 'M', 'Tu', 'W', 'Th', 'F', 'Sa'];
@@ -498,14 +572,33 @@ function padTime(time) {
 
 // Render a specific clock given its ID, a date, a region name, and whether to use UTC (for global clocks)
 function renderClock(clockid, d, region, useUTC) {
-	const hours = useUTC ? d.getUTCHours() : d.getHours();
+	const hours24 = useUTC ? d.getUTCHours() : d.getHours();
 	const minutes = useUTC ? d.getUTCMinutes() : d.getMinutes();
+	const seconds = useUTC ? d.getUTCSeconds() : d.getSeconds();
 	const fullYear = useUTC ? d.getUTCFullYear() : d.getFullYear();
 	const month = useUTC ? d.getUTCMonth() : d.getMonth();
 	const date = useUTC ? d.getUTCDate() : d.getDate();
 	const day = useUTC ? d.getUTCDay() : d.getDay();
+	const use24Hour = config.clock_use_24h !== false;
+	const showSeconds = config.clock_show_seconds === true;
 
-	const timeRender = `${padTime(hours)}:${padTime(minutes)}`;
+	let timeRender = "";
+	if (use24Hour) {
+		timeRender = `${padTime(hours24)}:${padTime(minutes)}`;
+		if (showSeconds) {
+			timeRender += `:${padTime(seconds)}`;
+		}
+	} else {
+		let hours12 = hours24 % 12;
+		if (hours12 == 0) hours12 = 12;
+		const ampm = hours24 >= 12 ? "PM" : "AM";
+		timeRender = `${hours12}:${padTime(minutes)}`;
+		if (showSeconds) {
+			timeRender += `:${padTime(seconds)}`;
+		}
+		timeRender += ` ${ampm}`;
+	}
+
 	const dateRender = `${fullYear}/${padTime(month + 1)}/${padTime(date)} - ${weekdays[day]}`;
 
 	document.getElementById("clockitem" + clockid).style.display = "inline";
@@ -575,17 +668,39 @@ function updateClock() {
 	}
 }
 
-// Update each second (only if the page is visible)
-setInterval(() => {
+let clockTickTimeoutId = null;
+function scheduleNextClockTick() {
+	const now = Date.now();
+	const delayMs = 1000 - (now % 1000);
+	clockTickTimeoutId = setTimeout(() => {
+		if (!document.hidden) {
+			updateClock();
+		}
+		scheduleNextClockTick();
+	}, delayMs);
+}
+
+function resyncClockTicker() {
+	if (clockTickTimeoutId !== null) {
+		clearTimeout(clockTickTimeoutId);
+		clockTickTimeoutId = null;
+	}
 	if (!document.hidden) {
 		updateClock();
 	}
-}, 1000);
+	scheduleNextClockTick();
+}
+
+document.addEventListener("visibilitychange", () => {
+	if (!document.hidden) {
+		resyncClockTicker();
+	}
+});
 
 // First time loading the page
 sortLinks();
 updateFiltered("");
 render();
-updateClock();
-// Load config from storage, if possible
+resyncClockTicker();
+// Load config from storage if possible, then update with that config
 loadConfig();
