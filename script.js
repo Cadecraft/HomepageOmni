@@ -163,7 +163,6 @@ async function handleCommand(fullCommand) {
 			saveConfig();
 		},
 		"clockmode": (arg) => {
-			// TODO: arg should be trimmed
 			const mode = arg.toLowerCase();
 			if (mode === "24" || mode === "24h") {
 				config.clock_use_24h = true;
