@@ -69,18 +69,15 @@ function hasExplicitPrefix(value) {
 	return native_bookmark_prefixes.some((prefix) => value.startsWith(prefix));
 }
 
-// Set a key and return whether successful
+// Set a key
 function setLink(new_key, new_href) {
 	const disallowed = [":", "=", "-", "+"];
 	if (new_key.trim().length == 0) {
-		error_text = "Name must not be empty";
-		return false;
+		throw new Error("Name must not be empty");
 	} else if (disallowed.some(d => new_key.trim().startsWith(d))) {
-		error_text = `Name cannot start with these characters: ${disallowed.reduce((a, b) => a + b)}`;
-		return false;
+		throw new Error(`Name cannot start with these characters: ${disallowed.reduce((a, b) => a + b)}`);
 	} else if (new_href.includes(",")) {
-		error_text = "URL cannot contain commas";
-		return false;
+		throw new Error("URL cannot contain commas");
 	}
 
 	const foundIndex = config.links.findIndex((l) => (
@@ -96,23 +93,20 @@ function setLink(new_key, new_href) {
 		config.links[foundIndex].href = new_href.trim();
 	}
 	saveConfig();
-	return true;
 }
 
-// Delete a key and return whether successful
+// Delete a key
 function deleteLink(new_key) {
 	const foundIndex = config.links.findIndex((l) => (
 		l.key.toLowerCase().trim() === new_key.toLowerCase().trim()
 	));
 
 	if (foundIndex == -1) {
-		error_text = "Link key not found; please provide the full name";
-		return false;
+		throw new Error("Link key not found; please provide the full name");
 	} else {
 		config.links.splice(foundIndex, 1);
 	}
 	saveConfig();
-	return true;
 }
 
 function parseSetArguments(arguments_string) {
@@ -148,8 +142,7 @@ function populateTemplate(templateString, args) {
 		// Build next part of string
 		res += templateString.substring(0, currIndex);
 		if (argNum >= args.length || argNum < 0) {
-			error_text = `Argument #${argNum} is required but not provided`;
-			return false;
+			throw new Error(`Argument #${argNum} is required but not provided`);
 		}
 		res += args[argNum];
 		templateString = templateString.substring(i + 1);
@@ -159,36 +152,31 @@ function populateTemplate(templateString, args) {
 	return res;
 }
 
-// Process entered input and return whether successful
-function processInput(new_value) {
-	// Allow (ignore) one space after the prefix
-    if (new_value[1] === " ") {
-        new_value = new_value[0] + new_value.substring(2);
-    }
-	// Determine type by first character
-	if (new_value.startsWith(":")) {
-		// Command
-		if (new_value == ":show") {
+async function handleCommand(fullCommand) {
+	const COMMAND_MAP = {
+		"show": () => {
 			config.display_when_empty = true;
 			saveConfig();
-		} else if (new_value == ":hide") {
+		},
+		"hide": () => {
 			config.display_when_empty = false;
 			saveConfig();
-		} else if (new_value.startsWith(":clockmode")) {
-			const mode = new_value.substring(10).trim().toLowerCase();
+		},
+		"clockmode": (arg) => {
+			const mode = arg.toLowerCase();
 			if (mode === "24" || mode === "24h") {
 				config.clock_use_24h = true;
 			} else if (mode === "12" || mode === "12h") {
 				config.clock_use_24h = false;
 			} else {
 				error_text = "Usage: :clockmode {12|24}";
-				return false;
+				throw new Error("Usage: :clockmode {12|24}");
 			}
 			saveConfig();
 			updateClock();
-			return true;
-		} else if (new_value.startsWith(":showseconds")) {
-			const value = new_value.substring(12).trim().toLowerCase();
+		},
+		"showseconds": (arg) => {
+			const value = arg.toLowerCase();
 			if (value === "") {
 				config.clock_show_seconds = !config.clock_show_seconds;
 			} else if (value === "true") {
@@ -196,47 +184,50 @@ function processInput(new_value) {
 			} else if (value === "false") {
 				config.clock_show_seconds = false;
 			} else {
-				error_text = "Usage: :showseconds {true|false}";
-				return false;
+				throw new Error("Usage: :showseconds {true|false}");
 			}
 			saveConfig();
 			updateClock();
-			return true;
-		} else if (new_value.startsWith(":delete")) {
-			// Delete
-			return deleteLink(new_value.substring(7).trim());
-		} else if (new_value.startsWith(":set")) {
-			// Set
-			// Parse to find arguments
-			const arguments_string = new_value.substring(4).trim();
-			const parsed = parseSetArguments(arguments_string);
-			return setLink(parsed.key_value, parsed.href_value);
-		} else if (new_value.startsWith(":export")) {
-			// Export as a .json file
-			exportFile();
-			return true;
-		} else if (new_value.startsWith(":import")) {
-			// Import from a .json file
-			// Activate file select
+		},
+		"delete": deleteLink,
+		"set": (args) => {
+			const parsed = parseSetArguments(args);
+			setLink(parsed.key_value, parsed.href_value);
+		},
+		"export": exportFile,
+		"import": () => {
 			document.getElementById("file-uploader").click();
-			return true;
-		} else if (new_value.startsWith(":resetconfig")) {
+		},
+		"resetconfig": () => {
 			config = structuredClone(CONFIG_DEFAULT);
 			saveConfig();
-			return true;
-		} else if (new_value.startsWith(":bookmark")) {
-			createBookmarkShortcuts(new_value.substring(9));
-			return true;
-		} else if (new_value.startsWith(":help")) {
-			// Tell to read the README.md
+		},
+		"bookmark": createBookmarkShortcuts,
+		"help": () => {
 			error_text = 'For help, check the included README.md file'
-			return true;
-		} else {
-			// Not a command
-			error_text = "Not a command";
-			return false;
 		}
-		return true;
+	};
+
+	const commandName = fullCommand.split(' ')[0];
+	const matchingFunc = COMMAND_MAP[commandName];
+	if (!matchingFunc) {
+		throw new Error("Not a command");
+	}
+
+	const args = fullCommand.substring(commandName.length).trim();
+
+	return matchingFunc(args);
+}
+
+// Process entered input
+async function processInput(new_value) {
+	// Allow (ignore) one space after the prefix
+    if (new_value[1] === " ") {
+        new_value = new_value[0] + new_value.substring(2);
+    }
+	// Determine type by first character
+	if (new_value.startsWith(":")) {
+		await handleCommand(new_value.substring(1));
 	} else if (new_value.startsWith("=")) {
 		// Go to the address
 		if (new_value.substring(1).startsWith("http")) window.location.href = new_value.substring(1).trim();
@@ -249,29 +240,21 @@ function processInput(new_value) {
 		const parsed = new_value.substring(1).trim().split(" ");
 		const template = config.templates[parsed[0]];
 		if (!template) {
-			error_text = "Not a template id";
-			return false;
+			throw new Error("Not a template id");
 		}
 
 		const res = populateTemplate(template, parsed.slice(1));
-		if (typeof res === 'string') {
-			location.href = res;
-			return true;
-		} else {
-			return false;
-		}
+		location.href = res;
 	} else {
 		// Link: choose the selected one of the filtered
 		if (links_filtered.length == 0) {
 			// Cannot do anything
-			error_text = "No matching links (did you mean to use a :command?)";
-			return false;
+			throw new Error("No matching links (did you mean to use a :command?)");
 		} else {
 			// Go to the link
 			if (selectedi < 0) selectedi = 0;
 			else if (selectedi >= links_filtered.length) selectedi = links_filtered.length - 1;
 			window.location.href = links_filtered[selectedi].href;
-			return true;
 		}
 	}
 }
@@ -485,12 +468,17 @@ omnibar.addEventListener("keydown", (e) => {
 		if (selectedi >= links_filtered.length) selectedi = 0;
 		render();
 	} else if (e.key === "Enter") {
-		const success = processInput(omnibar.value);
-		if (success) {
-			// Clear the box
-			omnibar.value = "";
-		}
-		updateFiltered(omnibar.value);
+		processInput(omnibar.value)
+			.then(() => {
+				// Clear the box on success
+				omnibar.value = "";
+			})
+			.catch((err) => {
+				error_text = err.message;
+			})
+			.finally(() => {
+				updateFiltered(omnibar.value);
+			});
 	} else {
 		error_text = "";
 	}
