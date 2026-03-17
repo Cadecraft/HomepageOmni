@@ -46,26 +46,22 @@ async function ensureBookmarkFolder() {
 }
 async function createBookmarkShortcuts(rawPrefixArgument) {
     if (is_chrome || !extension_api?.runtime?.getURL) {
-		error_text = "Bookmark keywords are only supported in Firefox";
-		return false;
+		throw new Error("Bookmark keywords are only supported in Firefox");
 	}
-
-    await browser.permissions.request({ permissions: ["bookmarks"] }).catch();
-    const granted = await browser.permissions.getAll().then((permissions) => permissions?.permissions?.includes("bookmarks"));
-    if (!granted || !extension_api?.bookmarks?.create) {
-        error_text = "Permission to create bookmarks was denied.";
-        updateFiltered(omnibar.value);
-        return false;
-    }
-
 
 	const trimmedArgument = rawPrefixArgument.trim();
     const validation = validateBookmarkPrefix(trimmedArgument);
     if (!validation.valid) {
-        error_text = validation.message;
-        return false;
+        throw new Error(validation.message);
     }
     const omniPrefix = validation.value;
+
+    await browser.permissions.request({ permissions: ["bookmarks"] }).catch();
+    const granted = await browser.permissions.getAll().then((permissions) => permissions?.permissions?.includes("bookmarks"));
+    if (!granted || !extension_api?.bookmarks?.create) {
+        updateFiltered(omnibar.value);
+        throw new Error("Permission to create bookmarks was denied.");
+    }
 
 	const folderId = await ensureBookmarkFolder();
 	const children = await extension_api.bookmarks.getChildren(folderId);

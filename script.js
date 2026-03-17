@@ -142,8 +142,7 @@ function populateTemplate(templateString, args) {
 		// Build next part of string
 		res += templateString.substring(0, currIndex);
 		if (argNum >= args.length || argNum < 0) {
-			error_text = `Argument #${argNum} is required but not provided`;
-			return false;
+			throw new Error(`Argument #${argNum} is required but not provided`);
 		}
 		res += args[argNum];
 		templateString = templateString.substring(i + 1);
@@ -153,7 +152,7 @@ function populateTemplate(templateString, args) {
 	return res;
 }
 
-function handleCommand(fullCommand) {
+async function handleCommand(fullCommand) {
 	const COMMAND_MAP = {
 		"show": () => {
 			config.display_when_empty = true;
@@ -204,40 +203,33 @@ function handleCommand(fullCommand) {
 			config = structuredClone(CONFIG_DEFAULT);
 			saveConfig();
 		},
-		// TODO: throw errors in the bookmark helper too
 		"bookmark": createBookmarkShortcuts,
 		"help": () => {
 			error_text = 'For help, check the included README.md file'
 		}
 	};
 
-	const userCommand = fullCommand.split(' ')[0];
-	const matchingFunc = COMMAND_MAP[userCommand];
+	const commandName = fullCommand.split(' ')[0];
+	const matchingFunc = COMMAND_MAP[commandName];
 	if (!matchingFunc) {
 		error_text = "Not a command";
 		return false;
 	}
 
-	const args = fullCommand.substring(userCommand.length).trim();
+	const args = fullCommand.substring(commandName.length).trim();
 
-	try {
-		matchingFunc(args);
-		return true;
-	} catch (err) {
-		error_text = err.message;
-		return false;
-	}
+	return Promise.resolve(matchingFunc(args));
 }
 
 // Process entered input and return whether successful
-function processInput(new_value) {
+async function processInput(new_value) {
 	// Allow (ignore) one space after the prefix
     if (new_value[1] === " ") {
         new_value = new_value[0] + new_value.substring(2);
     }
 	// Determine type by first character
 	if (new_value.startsWith(":")) {
-		return handleCommand(new_value.substring(1));
+		await handleCommand(new_value.substring(1));
 	} else if (new_value.startsWith("=")) {
 		// Go to the address
 		if (new_value.substring(1).startsWith("http")) window.location.href = new_value.substring(1).trim();
@@ -250,29 +242,21 @@ function processInput(new_value) {
 		const parsed = new_value.substring(1).trim().split(" ");
 		const template = config.templates[parsed[0]];
 		if (!template) {
-			error_text = "Not a template id";
-			return false;
+			throw new Error("Not a template id");
 		}
 
 		const res = populateTemplate(template, parsed.slice(1));
-		if (typeof res === 'string') {
-			location.href = res;
-			return true;
-		} else {
-			return false;
-		}
+		location.href = res;
 	} else {
 		// Link: choose the selected one of the filtered
 		if (links_filtered.length == 0) {
 			// Cannot do anything
-			error_text = "No matching links (did you mean to use a :command?)";
-			return false;
+			throw new Error("No matching links (did you mean to use a :command?)");
 		} else {
 			// Go to the link
 			if (selectedi < 0) selectedi = 0;
 			else if (selectedi >= links_filtered.length) selectedi = links_filtered.length - 1;
 			window.location.href = links_filtered[selectedi].href;
-			return true;
 		}
 	}
 }
@@ -486,12 +470,17 @@ omnibar.addEventListener("keydown", (e) => {
 		if (selectedi >= links_filtered.length) selectedi = 0;
 		render();
 	} else if (e.key === "Enter") {
-		const success = processInput(omnibar.value);
-		if (success) {
-			// Clear the box
-			omnibar.value = "";
-		}
-		updateFiltered(omnibar.value);
+		processInput(omnibar.value)
+			.then(() => {
+				// Clear the box on success
+				omnibar.value = "";
+			})
+			.catch((err) => {
+				error_text = err.message;
+			})
+			.finally(() => {
+				updateFiltered(omnibar.value);
+			});
 	} else {
 		error_text = "";
 	}
